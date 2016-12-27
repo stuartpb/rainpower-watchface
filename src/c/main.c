@@ -31,7 +31,7 @@ static void update_time() {
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_time_buffer);
 
-  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %02i/%02i.%04i",
+  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s%02i/%02i.%04i",
     weekdays[tick_time->tm_wday],
     tick_time->tm_mon + 1, tick_time->tm_mday,
     tick_time->tm_year + 1900);
