@@ -20,15 +20,15 @@
             "media": [
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
-                    "file": "fonts/NovaMono.ttf",
-                    "name": "FONT_NOVA_MONO_48",
+                    "file": "fonts/OCRB.ttf",
+                    "name": "FONT_OCR_B_48",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
-                    "file": "fonts/NovaMono.ttf",
-                    "name": "FONT_NOVA_MONO_20",
+                    "file": "fonts/OCRB.ttf",
+                    "name": "FONT_OCR_B_20",
                     "targetPlatforms": null,
                     "type": "font"
                 }
