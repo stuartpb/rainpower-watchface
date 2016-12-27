@@ -21,7 +21,7 @@
                 {
                     "characterRegex": "[0-9A-Z\\-:./]",
                     "file": "fonts/NovaMono.ttf",
-                    "name": "FONT_NOVAMONO_48",
+                    "name": "FONT_NOVA_MONO_48",
                     "targetPlatforms": null,
                     "type": "font"
                 }
