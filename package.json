@@ -19,16 +19,16 @@
         "resources": {
             "media": [
                 {
-                    "characterRegex": "[0-9A-Z\\-:./]",
+                    "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/NovaMono.ttf",
                     "name": "FONT_NOVA_MONO_48",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
-                    "characterRegex": "[0-9A-Z\\-:./]",
+                    "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/NovaMono.ttf",
-                    "name": "FONT_NOVA_MONO_24",
+                    "name": "FONT_NOVA_MONO_20",
                     "targetPlatforms": null,
                     "type": "font"
                 }

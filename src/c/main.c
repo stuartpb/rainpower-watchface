@@ -64,7 +64,7 @@ static void main_window_load(Window *window) {
 
   // Create GFonts
   s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NOVA_MONO_48));
-  s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NOVA_MONO_24));
+  s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NOVA_MONO_20));
 
   // Apply to TextLayer
   text_layer_set_font(s_time_layer, s_time_font);
