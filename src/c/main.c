@@ -18,6 +18,7 @@ static void update_time() {
   static char s_time_buffer[6];
   static char s_date_buffer[15];
 
+  int mon = tick_time->tm_mon;
   if (clock_is_24h_style()) {
     strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", tick_time);
   } else {
@@ -31,9 +32,10 @@ static void update_time() {
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_time_buffer);
 
-  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %02i/%02i.%04i",
+  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %c/%02i.%04i",
     weekdays[tick_time->tm_wday],
-    tick_time->tm_mon, tick_time->tm_mday,
+    mon < 10 ? '0' + mon : mon == 10 ? 'X' : 'E',
+    tick_time->tm_mday,
     tick_time->tm_year + 1900);
 
   // Display this time on the TextLayer
