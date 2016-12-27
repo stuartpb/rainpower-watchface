@@ -17,10 +17,10 @@ static void update_time() {
   if (clock_is_24h_style()) {
     strftime(s_buffer, sizeof(s_buffer), "%H:%M", tick_time);
   } else {
+    int mhour = tick_time->tm_hour % 12;
     snprintf(s_buffer, sizeof(s_buffer), "%c%c:%02i",
       tick_time->tm_hour < 12 ? 'A' : 'P',
-      tick_time->tm_hour < 10 ? '0' + tick_time->tm_hour :
-        tick_time->tm_hour == 10 ? 'X' : 'E',
+      mhour < 10 ? '0' + mhour : mhour == 10 ? 'X' : 'E',
       tick_time->tm_min);
   }
 
