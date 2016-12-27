@@ -4,6 +4,9 @@ static Window *s_main_window;
 static TextLayer *s_time_layer;
 static GFont s_time_font;
 
+static const char* weekdays[] = {
+  "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+
 static void update_time() {
   // Get a tm structure
   time_t temp = time(NULL);
@@ -11,8 +14,15 @@ static void update_time() {
 
   // Write the current hours and minutes into a buffer
   static char s_buffer[8];
-  strftime(s_buffer, sizeof(s_buffer), clock_is_24h_style() ?
-                                          "%H:%M" : "%I:%M", tick_time);
+  if (clock_is_24h_style()) {
+    strftime(s_buffer, sizeof(s_buffer), "%H:%M", tick_time);
+  } else {
+    snprintf(s_buffer, sizeof(s_buffer), "%c%c:%02i",
+      tick_time->tm_hour < 12 ? 'A' : 'P',
+      tick_time->tm_hour < 10 ? '0' + tick_time->tm_hour :
+        tick_time->tm_hour == 10 ? 'X' : 'E',
+      tick_time->tm_min);
+  }
 
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_buffer);
