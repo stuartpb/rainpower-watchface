@@ -63,8 +63,8 @@ static void main_window_load(Window *window) {
       GRect(0, PBL_IF_ROUND_ELSE(110, 105), bounds.size.w, 25));
 
   // Create GFonts
-  s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OCR_B_48));
-  s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_OCR_B_20));
+  s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GIDOLE_48));
+  s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_GIDOLE_20));
 
   // Apply to TextLayer
   text_layer_set_font(s_time_layer, s_time_font);

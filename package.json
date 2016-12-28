@@ -20,15 +20,15 @@
             "media": [
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
-                    "file": "fonts/OCRB.ttf",
-                    "name": "FONT_OCR_B_48",
+                    "file": "fonts/Gidole-Regular.ttf",
+                    "name": "FONT_GIDOLE_48",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
-                    "file": "fonts/OCRB.ttf",
-                    "name": "FONT_OCR_B_20",
+                    "file": "fonts/Gidole-Regular.ttf",
+                    "name": "FONT_GIDOLE_20",
                     "targetPlatforms": null,
                     "type": "font"
                 }
