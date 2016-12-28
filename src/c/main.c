@@ -9,7 +9,7 @@ static Layer *s_phone_batt_layer;
 static GFont s_time_font;
 static GFont s_date_font;
 static int s_time_is_pm = 2;
-static double s_phone_batt_level = 0.0;
+static int s_phone_batt_level = 0;
 
 static const char* weekdays[] = {
   "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
@@ -63,9 +63,11 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   // Read tuples for data
-  Tuple *phone_batt_level_tuple = dict_find(iterator, MESSAGE_KEY_PHONE_BATT_LEVEL);
-  Tuple *phone_batt_charging_tuple = dict_find(iterator, MESSAGE_KEY_PHONE_BATT_CHARGING);
-  
+  Tuple *phone_batt_level_tuple = dict_find(
+    iterator, MESSAGE_KEY_PHONE_BATT_LEVEL);
+  Tuple *phone_batt_charging_tuple = dict_find(
+    iterator, MESSAGE_KEY_PHONE_BATT_CHARGING);
+
   if (phone_batt_level_tuple) {
     s_phone_batt_level = phone_batt_level_tuple->value->int32;
     layer_mark_dirty(s_phone_batt_layer);
@@ -77,7 +79,7 @@ static void inbox_dropped_callback(AppMessageResult reason, void *context) {
 }
 
 static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed, code %i", reason);
 }
 
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
@@ -129,7 +131,10 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  // Create TextLayers with specific bounds
+  // Create layers
+  s_phone_batt_layer = layer_create(
+    GRect(0, 10, bounds.size.w, 10));
+  layer_set_update_proc(s_phone_batt_layer, phone_batt_update_proc);
   s_hour_layer = text_layer_create(
     GRect(0, bounds.size.h/2-50,
       bounds.size.w/2-8, 50));
@@ -161,6 +166,7 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
 
   // Add it as a child layer to the Window's root layer
+  layer_add_child(window_layer, s_phone_batt_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_hour_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_min_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
@@ -197,7 +203,7 @@ static void init() {
   app_message_register_inbox_dropped(inbox_dropped_callback);
   app_message_register_outbox_failed(outbox_failed_callback);
   app_message_register_outbox_sent(outbox_sent_callback);
-  
+
   // Open AppMessage
   const int inbox_size = 128;
   const int outbox_size = 128;
@@ -205,7 +211,7 @@ static void init() {
 
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-  
+
   // Make sure the time is displayed from the start
   update_time();
 }
