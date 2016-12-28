@@ -13,7 +13,9 @@
         "displayName": "Rainpower",
         "enableMultiJS": true,
         "messageKeys": [
-            "dummy"
+            "QUERY_PHONE_BATT",
+            "PHONE_BATT_LEVEL",
+            "PHONE_BATT_CHARGING"
         ],
         "projectType": "native",
         "resources": {
@@ -21,14 +23,14 @@
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/Gidole-Regular.ttf",
-                    "name": "FONT_GIDOLE_48",
+                    "name": "FONT_GIDOLE_20",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/Gidole-Regular.ttf",
-                    "name": "FONT_GIDOLE_20",
+                    "name": "FONT_GIDOLE_48",
                     "targetPlatforms": null,
                     "type": "font"
                 }

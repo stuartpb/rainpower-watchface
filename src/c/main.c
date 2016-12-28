@@ -5,9 +5,11 @@ static TextLayer *s_hour_layer;
 static TextLayer *s_min_layer;
 static TextLayer *s_date_layer;
 static Layer *s_colon_layer;
+static Layer *s_phone_batt_layer;
 static GFont s_time_font;
 static GFont s_date_font;
 static int s_time_is_pm = 2;
+static double s_phone_batt_level = 0.0;
 
 static const char* weekdays[] = {
   "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
@@ -48,6 +50,38 @@ static void update_time() {
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
+  // Begin dictionary
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  // Add a key-value pair
+  dict_write_uint8(iter, MESSAGE_KEY_QUERY_PHONE_BATT, 1);
+
+  // Send the message!
+  app_message_outbox_send();
+}
+
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  // Read tuples for data
+  Tuple *phone_batt_level_tuple = dict_find(iterator, MESSAGE_KEY_PHONE_BATT_LEVEL);
+  Tuple *phone_batt_charging_tuple = dict_find(iterator, MESSAGE_KEY_PHONE_BATT_CHARGING);
+  
+  if (phone_batt_level_tuple) {
+    s_phone_batt_level = phone_batt_level_tuple->value->int32;
+    layer_mark_dirty(s_phone_batt_layer);
+  }
+}
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+}
+
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+}
+
+static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
+  //APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }
 
 static void init_watch_text_layer(TextLayer *text_layer) {
@@ -73,6 +107,21 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
       GRect(-1,bounds.size.h-15,10,12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
+}
+
+static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+  int bar_width = s_phone_batt_level * (bounds.size.w - 10);
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  graphics_context_set_text_color(ctx, GColorWhite);
+  graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+    GRect(-1,-4,10,12),
+    GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_rect(ctx, GRect(10,4,bounds.size.w-10,2), 0, GCornerNone);
+  graphics_context_set_fill_color(ctx, GColorGreen);
+  graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
 }
 
 static void main_window_load(Window *window) {
@@ -124,6 +173,7 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_min_layer);
   text_layer_destroy(s_date_layer);
   layer_destroy(s_colon_layer);
+  layer_destroy(s_phone_batt_layer);
 }
 
 static void init() {
@@ -142,9 +192,20 @@ static void init() {
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
+  // Register callbacks
+  app_message_register_inbox_received(inbox_received_callback);
+  app_message_register_inbox_dropped(inbox_dropped_callback);
+  app_message_register_outbox_failed(outbox_failed_callback);
+  app_message_register_outbox_sent(outbox_sent_callback);
+  
+  // Open AppMessage
+  const int inbox_size = 128;
+  const int outbox_size = 128;
+  app_message_open(inbox_size, outbox_size);
+
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-
+  
   // Make sure the time is displayed from the start
   update_time();
 }
