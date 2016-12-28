@@ -6,9 +6,11 @@ static TextLayer *s_min_layer;
 static TextLayer *s_date_layer;
 static Layer *s_colon_layer;
 static Layer *s_phone_batt_layer;
+static Layer *s_watch_batt_layer;
 static GFont s_time_font;
 static GFont s_date_font;
 static int s_time_is_pm = 2;
+static int s_watch_batt_level = 0;
 static int s_phone_batt_level = 0;
 
 static const char* weekdays[] = {
@@ -59,6 +61,12 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
   // Send the message!
   app_message_outbox_send();
+}
+
+static void watch_battery_state_callback(BatteryChargeState state) {
+  // Record the new battery level
+  s_watch_batt_level = state.charge_percent;
+  layer_mark_dirty(s_watch_batt_layer);
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -126,6 +134,21 @@ static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
 }
 
+static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+  int bar_width = s_watch_batt_level * (bounds.size.w - 10);
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  graphics_context_set_text_color(ctx, GColorWhite);
+  graphics_draw_text(ctx,"W",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+    GRect(-1,-4,10,12),
+    GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_rect(ctx, GRect(10,4,bounds.size.w-10,2), 0, GCornerNone);
+  graphics_context_set_fill_color(ctx, GColorBlue);
+  graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
+}
+
 static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
@@ -135,6 +158,9 @@ static void main_window_load(Window *window) {
   s_phone_batt_layer = layer_create(
     GRect(0, 10, bounds.size.w, 10));
   layer_set_update_proc(s_phone_batt_layer, phone_batt_update_proc);
+  s_watch_batt_layer = layer_create(
+    GRect(0, 0, bounds.size.w, 10));
+  layer_set_update_proc(s_watch_batt_layer, watch_batt_update_proc);
   s_hour_layer = text_layer_create(
     GRect(0, bounds.size.h/2-50,
       bounds.size.w/2-8, 50));
@@ -166,6 +192,7 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
 
   // Add it as a child layer to the Window's root layer
+  layer_add_child(window_layer, s_watch_batt_layer);
   layer_add_child(window_layer, s_phone_batt_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_hour_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_min_layer));
@@ -175,11 +202,12 @@ static void main_window_load(Window *window) {
 
 static void main_window_unload(Window *window) {
   // Destroy TextLayer
+  layer_destroy(s_watch_batt_layer);
+  layer_destroy(s_phone_batt_layer);
   text_layer_destroy(s_hour_layer);
   text_layer_destroy(s_min_layer);
   text_layer_destroy(s_date_layer);
   layer_destroy(s_colon_layer);
-  layer_destroy(s_phone_batt_layer);
 }
 
 static void init() {
@@ -198,6 +226,9 @@ static void init() {
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
+  // Register for watch battery level updates
+  battery_state_service_subscribe(watch_battery_state_callback);
+
   // Register callbacks
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
@@ -211,6 +242,9 @@ static void init() {
 
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+
+  // Ensure watch battery level is displayed from the start
+  watch_battery_state_callback(battery_state_service_peek());
 
   // Make sure the time is displayed from the start
   update_time();

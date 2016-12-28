@@ -1,3 +1,4 @@
+/* global Pebble navigator */
 function pebbleSuccess(e) {
   // do nothing
 }
@@ -13,16 +14,17 @@ function reportPhoneBatt() {
         'PHONE_BATT_CHARGING': battery.charging ? 1 : 0
       }, pebbleSuccess, pebbleFailure);
     });
-  } else {
-    console.error('No navigator.getBattery');
   }
 }
 
 Pebble.addEventListener('ready', function(e) {
-  reportPhoneBatt();
+  if (navigator.getBattery) {
+    reportPhoneBatt();
+  } else {
+    console.error('No navigator.getBattery');
+  }
 });
 Pebble.addEventListener('appmessage', function(e) {
-  console.log(e.payload);
   if (e.payload.QUERY_PHONE_BATT) {
     return reportPhoneBatt();
   }
