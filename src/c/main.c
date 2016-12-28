@@ -66,11 +66,11 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(0,-2,10,12),
+      GRect(0,-4,10,12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   } else if (s_time_is_pm == 1) {
     graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(0,bounds.size.h-14,10,12),
+      GRect(0,bounds.size.h-16,10,12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
 }
