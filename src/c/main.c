@@ -156,10 +156,10 @@ static void main_window_load(Window *window) {
 
   // Create layers
   s_phone_batt_layer = layer_create(
-    GRect(0, 10, bounds.size.w, 10));
+    GRect(0, 20, bounds.size.w, 10));
   layer_set_update_proc(s_phone_batt_layer, phone_batt_update_proc);
   s_watch_batt_layer = layer_create(
-    GRect(0, 0, bounds.size.w, 10));
+    GRect(0, 10, bounds.size.w, 10));
   layer_set_update_proc(s_watch_batt_layer, watch_batt_update_proc);
   s_hour_layer = text_layer_create(
     GRect(0, bounds.size.h/2-50,
