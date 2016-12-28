@@ -82,16 +82,16 @@ static void main_window_load(Window *window) {
 
   // Create TextLayers with specific bounds
   s_hour_layer = text_layer_create(
-    GRect(0, bounds.size.h/2-30,
+    GRect(0, bounds.size.h/2-50,
       bounds.size.w/2-8, 50));
   s_min_layer = text_layer_create(
-    GRect(bounds.size.w/2+8, bounds.size.h/2-30,
+    GRect(bounds.size.w/2+8, bounds.size.h/2-50,
       bounds.size.w/2-8, 50));
   s_colon_layer = layer_create(
-    GRect(bounds.size.w/2-4, bounds.size.h/2-16, 8, 34));
+    GRect(bounds.size.w/2-4, bounds.size.h/2-36, 8, 34));
   layer_set_update_proc(s_colon_layer, colon_update_proc);
   s_date_layer = text_layer_create(
-    GRect(0, bounds.size.h/2+30, bounds.size.w, 25));
+    GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
   // Create GFonts
   s_time_font = fonts_load_custom_font(
