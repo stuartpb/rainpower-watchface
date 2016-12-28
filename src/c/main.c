@@ -66,11 +66,11 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(1,1,6,8),
+      GRect(1,1,7,9),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   } else if (s_time_is_pm == 1) {
     graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(1,bounds.size.h-9,6,8),
+      GRect(1,bounds.size.h-9,7,9),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
 }
@@ -88,7 +88,7 @@ static void main_window_load(Window *window) {
     GRect(bounds.size.w/2+8, bounds.size.h/2-30,
       bounds.size.w/2-8, 50));
   s_colon_layer = layer_create(
-    GRect(bounds.size.w/2-4, bounds.size.h/2-20, 8, 40));
+    GRect(bounds.size.w/2-4, bounds.size.h/2-16, 8, 34));
   layer_set_update_proc(s_colon_layer, colon_update_proc);
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+30, bounds.size.w, 25));
