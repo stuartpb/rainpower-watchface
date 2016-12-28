@@ -61,16 +61,16 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_rect(ctx, GRect(0,0,10,12), 1, GCornersAll);
-  graphics_fill_rect(ctx, GRect(0,bounds.size.h-12,10,12), 1, GCornersAll);
+  graphics_fill_rect(ctx, GRect(0,0,8,11), 1, GCornersAll);
+  graphics_fill_rect(ctx, GRect(0,bounds.size.h-11,8,11), 1, GCornersAll);
   graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(0,-4,10,12),
+      GRect(-1,-4,10,12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   } else if (s_time_is_pm == 1) {
     graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(0,bounds.size.h-16,10,12),
+      GRect(-1,bounds.size.h-15,10,12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
 }
@@ -83,12 +83,12 @@ static void main_window_load(Window *window) {
   // Create TextLayers with specific bounds
   s_hour_layer = text_layer_create(
     GRect(0, bounds.size.h/2-30,
-      bounds.size.w/2-10, 50));
+      bounds.size.w/2-8, 50));
   s_min_layer = text_layer_create(
-    GRect(bounds.size.w/2+10, bounds.size.h/2-30,
-      bounds.size.w/2-10, 50));
+    GRect(bounds.size.w/2+8, bounds.size.h/2-30,
+      bounds.size.w/2-8, 50));
   s_colon_layer = layer_create(
-    GRect(bounds.size.w/2-5, bounds.size.h/2-16, 10, 34));
+    GRect(bounds.size.w/2-4, bounds.size.h/2-16, 8, 34));
   layer_set_update_proc(s_colon_layer, colon_update_proc);
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+30, bounds.size.w, 25));
