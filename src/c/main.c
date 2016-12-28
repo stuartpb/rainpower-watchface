@@ -141,11 +141,11 @@ static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
   graphics_draw_text(ctx,"W",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-    GRect(-1,-4,10,12),
+    GRect(-1,-4,12,16),
     GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, GRect(10,4,bounds.size.w-10,2), 0, GCornerNone);
-  graphics_context_set_fill_color(ctx, GColorBlue);
+  graphics_context_set_fill_color(ctx, GColorCyan);
   graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
 }
 
