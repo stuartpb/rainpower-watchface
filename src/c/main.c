@@ -121,7 +121,7 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
 
 static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
-  int bar_width = s_phone_batt_level * (bounds.size.w - 10);
+  int bar_width = s_phone_batt_level * (bounds.size.w - 10) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
@@ -136,7 +136,7 @@ static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
 
 static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
-  int bar_width = s_watch_batt_level * (bounds.size.w - 10);
+  int bar_width = s_watch_batt_level * (bounds.size.w - 10) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
