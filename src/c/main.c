@@ -63,7 +63,7 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, GRect(0,0,8,10), 1, GCornersAll);
   graphics_fill_rect(ctx, GRect(0,bounds.size.h-10,8,10), 1, GCornersAll);
-  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
       GRect(1,1,6,8),
@@ -85,10 +85,10 @@ static void main_window_load(Window *window) {
     GRect(0, bounds.size.h/2-30,
       bounds.size.w/2-8, 50));
   s_min_layer = text_layer_create(
-    GRect(bounds.size.w/2+16, bounds.size.h/2-30,
+    GRect(bounds.size.w/2+8, bounds.size.h/2-30,
       bounds.size.w/2-8, 50));
   s_colon_layer = layer_create(
-    GRect(bounds.size.w/2-4, bounds.size.h/2-30, 8, 50));
+    GRect(bounds.size.w/2-4, bounds.size.h/2-20, 8, 40));
   layer_set_update_proc(s_colon_layer, colon_update_proc);
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+30, bounds.size.w, 25));
