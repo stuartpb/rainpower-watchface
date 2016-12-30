@@ -58,15 +58,6 @@ static void update_time() {
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
-  // Begin dictionary
-  DictionaryIterator *iter;
-  app_message_outbox_begin(&iter);
-
-  // Add a key-value pair
-  dict_write_uint8(iter, MESSAGE_KEY_QUERY_PHONE_BATT, 1);
-
-  // Send the message!
-  app_message_outbox_send();
 }
 
 static void watch_battery_state_callback(BatteryChargeState state) {
@@ -85,7 +76,11 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
   if (phone_batt_level_tuple) {
     s_phone_batt_level = phone_batt_level_tuple->value->int32;
+  }
+  if (phone_batt_charging_tuple) {
     s_phone_batt_charging = phone_batt_charging_tuple->value->int32;
+  }
+  if (phone_batt_charging_tuple || phone_batt_level_tuple) {
     layer_mark_dirty(s_phone_batt_layer);
   }
 }
