@@ -22,6 +22,7 @@ Pebble.addEventListener('ready', function(e) {
         reportPhoneBatt();
       });
       battery.addEventListener('chargingchange', reportPhoneBatt);
+      reportPhoneBatt();
     });
   } else {
     console.error('No navigator.getBattery');
