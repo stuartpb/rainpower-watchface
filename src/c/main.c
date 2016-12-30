@@ -224,19 +224,25 @@ static void main_window_load(Window *window) {
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
   // Set update functions
-  #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
+  #define X_(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
+  #define X(name) X_(name)
   FOR_MAIN_WINDOW_LAYER_NAMES(X)
   #undef X
+  #undef X_
 
   // Create GFonts
-  #define X(name, id) name = fonts_load_custom_font(resource_get_handle(id));
+  #define X_(name, id) name = fonts_load_custom_font(resource_get_handle(id));
+  #define X(token) X_(token)
   FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
   #undef X
+  #undef X_
 
   // Create GBitmaps
-  #define X(name, id) name = gbitmap_create_with_resource(id);
+  #define X_(name, id) name = gbitmap_create_with_resource(id);
+  #define X(token) X_(token)
   FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
   #undef X
+  #undef X_
 
   // Apply to TextLayer
   text_layer_set_font(s_hour_layer, s_time_font);
