@@ -10,10 +10,14 @@ static Layer *s_watch_batt_layer;
 static GFont s_time_font;
 static GFont s_date_font;
 static GBitmap *s_watch_icon;
+static GBitmap *s_watch_charging_icon;
 static GBitmap *s_phone_icon;
+static GBitmap *s_phone_charging_icon;
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
+static int s_watch_batt_charging = 0;
 static int s_phone_batt_level = 0;
+static int s_phone_batt_charging = 0;
 
 static const char* weekdays[] = {
   "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
@@ -68,6 +72,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 static void watch_battery_state_callback(BatteryChargeState state) {
   // Record the new battery level
   s_watch_batt_level = state.charge_percent;
+  s_watch_batt_charging = state.is_plugged;
   layer_mark_dirty(s_watch_batt_layer);
 }
 
@@ -80,6 +85,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
   if (phone_batt_level_tuple) {
     s_phone_batt_level = phone_batt_level_tuple->value->int32;
+    s_phone_batt_charging = phone_batt_charging_tuple->value->int32;
     layer_mark_dirty(s_phone_batt_layer);
   }
 }
@@ -127,7 +133,9 @@ static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
-  graphics_draw_bitmap_in_rect(ctx,s_phone_icon,GRect(0,0,6,11));
+  graphics_draw_bitmap_in_rect(ctx,
+    s_phone_batt_charging ? s_phone_charging_icon : s_phone_icon,
+    GRect(0,0,6,11));
   graphics_context_set_fill_color(ctx, GColorDarkGray);
   graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorGreen);
@@ -140,7 +148,9 @@ static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
-  graphics_draw_bitmap_in_rect(ctx,s_watch_icon,GRect(0,0,6,11));
+  graphics_draw_bitmap_in_rect(ctx,
+    s_watch_batt_charging ? s_watch_charging_icon : s_watch_icon,
+    GRect(0,0,6,11));
   graphics_context_set_fill_color(ctx, GColorDarkGray);
   graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorCyan);
@@ -176,10 +186,16 @@ static void main_window_load(Window *window) {
     resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_48));
   s_date_font = fonts_load_custom_font(
     resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_20));
-  
+
   // Create GBitmaps
-  s_watch_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_6X11);
-  s_phone_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_6X11);
+  s_watch_icon =
+    gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_6X11);
+  s_watch_charging_icon =
+    gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_CHARGING_6X11);
+  s_phone_icon =
+    gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_6X11);
+  s_phone_charging_icon =
+    gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_CHARGING_6X11);
 
   // Apply to TextLayer
   text_layer_set_font(s_hour_layer, s_time_font);
@@ -260,7 +276,9 @@ static void deinit() {
   fonts_unload_custom_font(s_date_font);
   // Destroy GBitmaps
   gbitmap_destroy(s_watch_icon);
+  gbitmap_destroy(s_watch_charging_icon);
   gbitmap_destroy(s_phone_icon);
+  gbitmap_destroy(s_phone_charging_icon);
 }
 
 int main(void) {
