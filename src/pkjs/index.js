@@ -24,9 +24,11 @@ Pebble.addEventListener('ready', function(e) {
       battery.addEventListener('chargingchange', reportPhoneBatt);
       reportPhoneBatt();
     });
-  } else {
+  } else if (navigator.userAgent) {
     console.error('No navigator.getBattery');
     console.error('User agent: '+navigator.userAgent);
+  } else {
+    console.log('No navigator.userAgent, probably running in emulator');
   }
 });
 Pebble.addEventListener('appmessage', function(e) {
