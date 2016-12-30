@@ -20,7 +20,8 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(watch_icon, ICON_WATCH_6X11)) \
   APPLY_MACRO(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
   APPLY_MACRO(X,tr(phone_icon, ICON_PHONE_6X11)) \
-  APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
+  APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11)) \
+  APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(time_font, FONT_ARVO_BOLD_48)) \
@@ -76,6 +77,7 @@ static int s_watch_batt_level = 0;
 static int s_watch_batt_charging = 0;
 static int s_phone_batt_level = 0;
 static int s_phone_batt_charging = 0;
+static int s_phone_connected = 0;
 
 static const char* weekdays[] = {
   "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
@@ -155,6 +157,11 @@ static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
   //APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }
 
+static void bluetooth_callback(bool connected) {
+  s_phone_connected = connected;
+  layer_mark_dirty(s_phone_batt_layer);
+}
+
 static void init_watch_text_layer(TextLayer *text_layer) {
   // Improve the layout to be more like a watchface
   text_layer_set_background_color(text_layer, GColorClear);
@@ -187,11 +194,14 @@ static void phone_batt_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
   graphics_draw_bitmap_in_rect(ctx,
-    s_phone_batt_charging ? s_phone_charging_icon : s_phone_icon,
+    s_phone_connected
+      ? s_phone_batt_charging ? s_phone_charging_icon : s_phone_icon
+      : s_phone_disconnected_icon,
     GRect(0,0,6,11));
   graphics_context_set_fill_color(ctx, GColorDarkGray);
   graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
-  graphics_context_set_fill_color(ctx, GColorGreen);
+  graphics_context_set_fill_color(ctx,
+    s_phone_connected ? GColorGreen : GColorVividViolet);
   graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
@@ -291,9 +301,6 @@ static void init() {
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
-  // Register for watch battery level updates
-  battery_state_service_subscribe(watch_battery_state_callback);
-
   // Register callbacks
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
@@ -307,6 +314,17 @@ static void init() {
 
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+
+  // Register for Bluetooth connection updates
+  connection_service_subscribe((ConnectionHandlers) {
+    .pebble_app_connection_handler = bluetooth_callback
+  });
+
+  // Show the correct state of the BT connection from the start
+  bluetooth_callback(connection_service_peek_pebble_app_connection());
+
+  // Register for watch battery level updates
+  battery_state_service_subscribe(watch_battery_state_callback);
 
   // Ensure watch battery level is displayed from the start
   watch_battery_state_callback(battery_state_service_peek());
