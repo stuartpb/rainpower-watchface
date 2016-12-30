@@ -2,25 +2,54 @@
 
 static Window *s_main_window;
 
-#define FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X) \
-  X(s_hour_layer) \
-  X(s_min_layer) \
-  X(s_date_layer)
+#define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, tr) \
+  macro(tr(hour_layer)) \
+  macro(tr(min_layer)) \
+  macro(tr(date_layer))
 
-#define FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(X) \
-  X(s_colon_layer) \
-  X(s_phone_batt_layer) \
-  X(s_watch_batt_layer)
+#define MAIN_WINDOW_LAYERS_METAMACRO(macro, tr) \
+  macro(tr(colon_layer)) \
+  macro(tr(phone_batt_layer)) \
+  macro(tr(watch_batt_layer))
 
-#define FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X) \
-  X(s_time_font, FONT_ARVO_BOLD_48) \
-  X(s_date_font, FONT_ARVO_BOLD_20)
+#define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, tr) \
+  macro(tr(watch_icon, ICON_WATCH_6X11)) \
+  macro(tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
+  macro(tr(phone_icon, ICON_PHONE_6X11)) \
+  macro(tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
 
-#define FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X) \
-  X(s_watch_icon, ICON_WATCH_6X11) \
-  X(s_watch_charging_icon, ICON_WATCH_CHARGING_6X11) \
-  X(s_phone_icon, ICON_PHONE_6X11) \
-  X(s_phone_charging_icon, ICON_PHONE_CHARGING_6X11)
+#define GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, tr) \
+  macro(tr(time_font, FONT_ARVO_BOLD_48)) \
+  macro(tr(date_font, FONT_ARVO_BOLD_20))
+
+#define IDENTITY_MACRO(x) x
+#define STATIC_PREFIX_MACRO(x) s_ ## x
+#define STATIC_PREFIX_DISCARD_MACRO(x, _) s_ ## x
+#define STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO(x, id) \
+  s_ ## x, RESOURCE_ID_ ## id
+
+#define FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(macro) \
+  MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+
+#define FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(macro) \
+  MAIN_WINDOW_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+
+#define FOR_MAIN_WINDOW_LAYER_NAMES(macro) \
+  MAIN_WINDOW_LAYERS_METAMACRO(macro, IDENTITY_MACRO)
+
+#define FOR_STATIC_GFONTS(macro) \
+  GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
+
+#define FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(macro) \
+  GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, \
+    STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO)
+
+#define FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(macro) \
+  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, \
+    STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO)
+
+#define FOR_STATIC_GBITMAP_POINTERS(macro) \
+  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
 
 #define X(name) static TextLayer *name;
 FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
@@ -30,12 +59,12 @@ FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
 FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(X)
 #undef X
 
-#define X(name, id) static GFont name;
-FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
+#define X(name) static GFont name;
+FOR_STATIC_GFONTS(X)
 #undef X
 
-#define X(name, id) static GBitmap *name;
-FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
+#define X(name) static GBitmap *name;
+FOR_STATIC_GBITMAP_POINTERS(X)
 #undef X
 
 static int s_time_is_pm = 2;
@@ -128,7 +157,7 @@ static void init_watch_text_layer(TextLayer *text_layer) {
   text_layer_set_text_color(text_layer, GColorWhite);
 }
 
-static void colon_update_proc(Layer *layer, GContext *ctx) {
+static void colon_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
@@ -147,7 +176,7 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
   }
 }
 
-static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
+static void phone_batt_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   int bar_width = s_phone_batt_level * (bounds.size.w - 8) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
@@ -162,7 +191,7 @@ static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
-static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
+static void watch_batt_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   int bar_width = s_watch_batt_level * (bounds.size.w - 8) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
@@ -183,32 +212,29 @@ static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
 
   // Create layers
-  s_phone_batt_layer = layer_create(
-    GRect(0, 21, bounds.size.w, 11));
-  layer_set_update_proc(s_phone_batt_layer, phone_batt_update_proc);
-  s_watch_batt_layer = layer_create(
-    GRect(0, 8, bounds.size.w, 11));
-  layer_set_update_proc(s_watch_batt_layer, watch_batt_update_proc);
-  s_hour_layer = text_layer_create(
-    GRect(0, bounds.size.h/2-50,
-      bounds.size.w/2-8, 50));
-  s_min_layer = text_layer_create(
-    GRect(bounds.size.w/2+8, bounds.size.h/2-50,
-      bounds.size.w/2-8, 50));
+  s_phone_batt_layer = layer_create(GRect(0, 21, bounds.size.w, 11));
+  s_watch_batt_layer = layer_create(GRect(0, 8, bounds.size.w, 11));
   s_colon_layer = layer_create(
     GRect(bounds.size.w/2-4, bounds.size.h/2-36, 8, 34));
-  layer_set_update_proc(s_colon_layer, colon_update_proc);
+  s_hour_layer = text_layer_create(
+    GRect(0, bounds.size.h/2-50, bounds.size.w/2-8, 50));
+  s_min_layer = text_layer_create(
+    GRect(bounds.size.w/2+8, bounds.size.h/2-50, bounds.size.w/2-8, 50));
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
+  // Set update functions
+  #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
+  FOR_MAIN_WINDOW_LAYER_NAMES(X)
+  #undef X
+
   // Create GFonts
-  #define X(name, id) \
-    name = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_ ## id));
+  #define X(name, id) name = fonts_load_custom_font(resource_get_handle(id));
   FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
   #undef X
 
   // Create GBitmaps
-  #define X(name, id) name = gbitmap_create_with_resource(RESOURCE_ID_ ## id);
+  #define X(name, id) name = gbitmap_create_with_resource(id);
   FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
   #undef X
 
@@ -289,12 +315,12 @@ static void deinit() {
   // Destroy Window
   window_destroy(s_main_window);
 
-  #define X(name, id) fonts_unload_custom_font(name);
-  FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
+  #define X(name) fonts_unload_custom_font(name);
+  FOR_STATIC_GFONTS(X)
   #undef X
 
-  #define X(name, id) gbitmap_destroy(name);
-  FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
+  #define X(name) gbitmap_destroy(name);
+  FOR_STATIC_GBITMAP_POINTERS(X)
   #undef X
 }
 
