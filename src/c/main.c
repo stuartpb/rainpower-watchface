@@ -201,7 +201,7 @@ static void phone_batt_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorDarkGray);
   graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
   graphics_context_set_fill_color(ctx,
-    s_phone_connected ? GColorGreen : GColorVividViolet);
+    s_phone_connected ? GColorGreen : GColorMagenta);
   graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
