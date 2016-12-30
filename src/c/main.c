@@ -3,27 +3,27 @@
 static Window *s_main_window;
 
 // you need this level of indirection for metamacros
-#define M(x, t) x(t)
+#define APPLY_MACRO(x, t) x(t)
 
 #define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(X, tr) \
-  M(X,tr(hour_layer)) \
-  M(X,tr(min_layer)) \
-  M(X,tr(date_layer))
+  APPLY_MACRO(X,tr(hour_layer)) \
+  APPLY_MACRO(X,tr(min_layer)) \
+  APPLY_MACRO(X,tr(date_layer))
 
 #define MAIN_WINDOW_LAYERS_METAMACRO(X, tr) \
-  M(X,tr(colon_layer)) \
-  M(X,tr(phone_batt_layer)) \
-  M(X,tr(watch_batt_layer))
+  APPLY_MACRO(X,tr(colon_layer)) \
+  APPLY_MACRO(X,tr(phone_batt_layer)) \
+  APPLY_MACRO(X,tr(watch_batt_layer))
 
 #define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  M(X,tr(watch_icon, ICON_WATCH_6X11)) \
-  M(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
-  M(X,tr(phone_icon, ICON_PHONE_6X11)) \
-  M(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
+  APPLY_MACRO(X,tr(watch_icon, ICON_WATCH_6X11)) \
+  APPLY_MACRO(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
+  APPLY_MACRO(X,tr(phone_icon, ICON_PHONE_6X11)) \
+  APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  M(X,tr(time_font, FONT_ARVO_BOLD_48)) \
-  M(X,tr(date_font, FONT_ARVO_BOLD_20))
+  APPLY_MACRO(X,tr(time_font, FONT_ARVO_BOLD_48)) \
+  APPLY_MACRO(X,tr(date_font, FONT_ARVO_BOLD_20))
 
 #define IDENTITY_MACRO(x) x
 #define STATIC_PREFIX_MACRO(x) s_ ## x
@@ -227,21 +227,19 @@ static void main_window_load(Window *window) {
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
   // Set update functions
-  #define X_(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
-  #define X(name) X_(name)
+  #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
   FOR_MAIN_WINDOW_LAYER_NAMES(X)
   #undef X
-  #undef X_
 
   // Create GFonts
-  #define X_(name, id) name = fonts_load_custom_font(resource_get_handle(id));
-  FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X_)
-  #undef X_
+  #define X(name, id) name = fonts_load_custom_font(resource_get_handle(id));
+  FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
+  #undef X
 
   // Create GBitmaps
-  #define X_(name, id) name = gbitmap_create_with_resource(id);
-  FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X_)
-  #undef X_
+  #define X(name, id) name = gbitmap_create_with_resource(id);
+  FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
+  #undef X
 
   // Apply to TextLayer
   text_layer_set_font(s_hour_layer, s_time_font);
