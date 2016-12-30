@@ -2,25 +2,28 @@
 
 static Window *s_main_window;
 
-#define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, tr) \
-  macro(tr(hour_layer)) \
-  macro(tr(min_layer)) \
-  macro(tr(date_layer))
+// you need this level of indirection for metamacros
+#define M(x, t) x(t)
 
-#define MAIN_WINDOW_LAYERS_METAMACRO(macro, tr) \
-  macro(tr(colon_layer)) \
-  macro(tr(phone_batt_layer)) \
-  macro(tr(watch_batt_layer))
+#define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(X, tr) \
+  M(X,tr(hour_layer)) \
+  M(X,tr(min_layer)) \
+  M(X,tr(date_layer))
 
-#define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, tr) \
-  macro(tr(watch_icon, ICON_WATCH_6X11)) \
-  macro(tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
-  macro(tr(phone_icon, ICON_PHONE_6X11)) \
-  macro(tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
+#define MAIN_WINDOW_LAYERS_METAMACRO(X, tr) \
+  M(X,tr(colon_layer)) \
+  M(X,tr(phone_batt_layer)) \
+  M(X,tr(watch_batt_layer))
 
-#define GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, tr) \
-  macro(tr(time_font, FONT_ARVO_BOLD_48)) \
-  macro(tr(date_font, FONT_ARVO_BOLD_20))
+#define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
+  M(X,tr(watch_icon, ICON_WATCH_6X11)) \
+  M(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
+  M(X,tr(phone_icon, ICON_PHONE_6X11)) \
+  M(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11))
+
+#define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
+  M(X,tr(time_font, FONT_ARVO_BOLD_48)) \
+  M(X,tr(date_font, FONT_ARVO_BOLD_20))
 
 #define IDENTITY_MACRO(x) x
 #define STATIC_PREFIX_MACRO(x) s_ ## x
@@ -232,16 +235,12 @@ static void main_window_load(Window *window) {
 
   // Create GFonts
   #define X_(name, id) name = fonts_load_custom_font(resource_get_handle(id));
-  #define X(token) X_(token)
-  FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X)
-  #undef X
+  FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(X_)
   #undef X_
 
   // Create GBitmaps
   #define X_(name, id) name = gbitmap_create_with_resource(id);
-  #define X(token) X_(token)
-  FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
-  #undef X
+  FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X_)
   #undef X_
 
   // Apply to TextLayer
