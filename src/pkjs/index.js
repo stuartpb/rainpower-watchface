@@ -17,11 +17,15 @@ Pebble.addEventListener('ready', function(e) {
           'PHONE_BATT_CHARGING': battery.charging ? 1 : 0
         }, pebbleSuccess, pebbleFailure);
       };
-      battery.addEventListener('levelchange', reportPhoneBatt);
+      battery.addEventListener('levelchange', function() {
+        console.log('Level change: '+ (battery.level * 100) +'%');
+        reportPhoneBatt();
+      });
       battery.addEventListener('chargingchange', reportPhoneBatt);
     });
   } else {
     console.error('No navigator.getBattery');
+    console.error('User agent: '+navigator.userAgent);
   }
 });
 Pebble.addEventListener('appmessage', function(e) {
