@@ -1,18 +1,43 @@
 #include <pebble.h>
 
 static Window *s_main_window;
-static TextLayer *s_hour_layer;
-static TextLayer *s_min_layer;
-static TextLayer *s_date_layer;
-static Layer *s_colon_layer;
-static Layer *s_phone_batt_layer;
-static Layer *s_watch_batt_layer;
-static GFont s_time_font;
-static GFont s_date_font;
-static GBitmap *s_watch_icon;
-static GBitmap *s_watch_charging_icon;
-static GBitmap *s_phone_icon;
-static GBitmap *s_phone_charging_icon;
+
+#define X_FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS \
+  X(s_hour_layer) \
+  X(s_min_layer) \
+  X(s_date_layer)
+
+#define X_FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS \
+  X(s_colon_layer) \
+  X(s_phone_batt_layer) \
+  X(s_watch_batt_layer)
+
+#define X_FOR_STATIC_GFONTS_WITH_RESOURCE_IDS \
+  X(s_time_font, FONT_ARVO_BOLD_48) \
+  X(s_date_font, FONT_ARVO_BOLD_20)
+
+#define X_FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS \
+  X(s_watch_icon, ICON_WATCH_6X11) \
+  X(s_watch_charging_icon, ICON_WATCH_CHARGING_6X11) \
+  X(s_phone_icon, ICON_PHONE_6X11) \
+  X(s_phone_charging_icon, ICON_PHONE_CHARGING_6X11)
+
+#define X(name) static TextLayer *name;
+X_FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS
+#undef X
+
+#define X(name) static Layer *name;
+X_FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS
+#undef X
+
+#define X(name, id) static GFont name;
+X_FOR_STATIC_GFONTS_WITH_RESOURCE_IDS
+#undef X
+
+#define X(name, id) static GBitmap *name;
+X_FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS
+#undef X
+
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
 static int s_watch_batt_charging = 0;
@@ -177,20 +202,15 @@ static void main_window_load(Window *window) {
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
   // Create GFonts
-  s_time_font = fonts_load_custom_font(
-    resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_48));
-  s_date_font = fonts_load_custom_font(
-    resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_20));
+  #define X(name, id) \
+    name = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_ ## id));
+  X_FOR_STATIC_GFONTS_WITH_RESOURCE_IDS
+  #undef X
 
   // Create GBitmaps
-  s_watch_icon =
-    gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_6X11);
-  s_watch_charging_icon =
-    gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_CHARGING_6X11);
-  s_phone_icon =
-    gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_6X11);
-  s_phone_charging_icon =
-    gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_CHARGING_6X11);
+  #define X(name, id) name = gbitmap_create_with_resource(RESOURCE_ID_ ## id);
+  X_FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS
+  #undef X
 
   // Apply to TextLayer
   text_layer_set_font(s_hour_layer, s_time_font);
@@ -204,23 +224,25 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
 
-  // Add it as a child layer to the Window's root layer
-  layer_add_child(window_layer, s_watch_batt_layer);
-  layer_add_child(window_layer, s_phone_batt_layer);
-  layer_add_child(window_layer, text_layer_get_layer(s_hour_layer));
-  layer_add_child(window_layer, text_layer_get_layer(s_min_layer));
-  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
-  layer_add_child(window_layer, s_colon_layer);
+  // Add children to main window layer
+  #define ADD_MAIN_WINDOW_CHILD(layer) layer_add_child(window_layer, layer);
+  #define X ADD_MAIN_WINDOW_CHILD
+  X_FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS
+  #undef X
+  #define X(layer) ADD_MAIN_WINDOW_CHILD(text_layer_get_layer(layer))
+  X_FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS
+  #undef X
+  #undef ADD_MAIN_WINDOW_CHILD
 }
 
 static void main_window_unload(Window *window) {
-  // Destroy TextLayer
-  layer_destroy(s_watch_batt_layer);
-  layer_destroy(s_phone_batt_layer);
-  text_layer_destroy(s_hour_layer);
-  text_layer_destroy(s_min_layer);
-  text_layer_destroy(s_date_layer);
-  layer_destroy(s_colon_layer);
+  // Destroy layers
+  #define X(layer) layer_destroy(layer);
+  X_FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS
+  #undef X
+  #define X(layer) text_layer_destroy(layer);
+  X_FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS
+  #undef X
 }
 
 static void init() {
@@ -266,14 +288,14 @@ static void init() {
 static void deinit() {
   // Destroy Window
   window_destroy(s_main_window);
-  // Unload GFonts
-  fonts_unload_custom_font(s_time_font);
-  fonts_unload_custom_font(s_date_font);
-  // Destroy GBitmaps
-  gbitmap_destroy(s_watch_icon);
-  gbitmap_destroy(s_watch_charging_icon);
-  gbitmap_destroy(s_phone_icon);
-  gbitmap_destroy(s_phone_charging_icon);
+
+  #define X(name, id) fonts_unload_custom_font(name);
+  X_FOR_STATIC_GFONTS_WITH_RESOURCE_IDS
+  #undef X
+
+  #define X(name, id) gbitmap_destroy(name);
+  X_FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS
+  #undef X
 }
 
 int main(void) {
