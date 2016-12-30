@@ -3,6 +3,7 @@
 static Window *s_main_window;
 
 // you need this level of indirection for metamacros
+// https://stackoverflow.com/a/41395465/34799
 #define APPLY_MACRO(x, t) x(t)
 
 #define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(X, tr) \
