@@ -21,16 +21,46 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/icon-phone-disconnected-6x11.png",
+                    "name": "ICON_PHONE_DISCONNECTED_6X11",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/icon-phone-charging-6x11.png",
+                    "name": "ICON_PHONE_CHARGING_6X11",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/icon-watch-charging-6x11.png",
+                    "name": "ICON_WATCH_CHARGING_6X11",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/icon-phone-6x11.png",
+                    "name": "ICON_PHONE_6X11",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/icon-watch-6x11.png",
+                    "name": "ICON_WATCH_6X11",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/Arvo-Bold.ttf",
-                    "name": "FONT_ARVO_BOLD_20",
+                    "name": "FONT_ARVO_BOLD_48",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
                     "characterRegex": "[0-9A-Z\\-:./ ]",
                     "file": "fonts/Arvo-Bold.ttf",
-                    "name": "FONT_ARVO_BOLD_48",
+                    "name": "FONT_ARVO_BOLD_20",
                     "targetPlatforms": null,
                     "type": "font"
                 }

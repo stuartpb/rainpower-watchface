@@ -9,6 +9,8 @@ static Layer *s_phone_batt_layer;
 static Layer *s_watch_batt_layer;
 static GFont s_time_font;
 static GFont s_date_font;
+static GBitmap *s_watch_icon;
+static GBitmap *s_phone_icon;
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
 static int s_phone_batt_level = 0;
@@ -121,32 +123,28 @@ static void colon_update_proc(Layer *layer, GContext *ctx) {
 
 static void phone_batt_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
-  int bar_width = s_phone_batt_level * (bounds.size.w - 10) / 100;
+  int bar_width = s_phone_batt_level * (bounds.size.w - 8) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
-  graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-    GRect(-1,-4,10,12),
-    GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
+  graphics_draw_bitmap_in_rect(ctx,s_phone_icon,GRect(0,0,6,11));
   graphics_context_set_fill_color(ctx, GColorDarkGray);
-  graphics_fill_rect(ctx, GRect(10,1,bounds.size.w-10,8), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorGreen);
-  graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
 static void watch_batt_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
-  int bar_width = s_watch_batt_level * (bounds.size.w - 10) / 100;
+  int bar_width = s_watch_batt_level * (bounds.size.w - 8) / 100;
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_text_color(ctx, GColorWhite);
-  graphics_draw_text(ctx,"W",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-    GRect(-1,-4,12,16),
-    GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
+  graphics_draw_bitmap_in_rect(ctx,s_watch_icon,GRect(0,0,6,11));
   graphics_context_set_fill_color(ctx, GColorDarkGray);
-  graphics_fill_rect(ctx, GRect(10,1,bounds.size.w-10,8), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(8,1,bounds.size.w-8,9), 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorCyan);
-  graphics_fill_rect(ctx, GRect(10,1,bar_width,8), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
 static void main_window_load(Window *window) {
@@ -156,10 +154,10 @@ static void main_window_load(Window *window) {
 
   // Create layers
   s_phone_batt_layer = layer_create(
-    GRect(0, 20, bounds.size.w, 10));
+    GRect(0, 21, bounds.size.w, 11));
   layer_set_update_proc(s_phone_batt_layer, phone_batt_update_proc);
   s_watch_batt_layer = layer_create(
-    GRect(0, 10, bounds.size.w, 10));
+    GRect(0, 8, bounds.size.w, 11));
   layer_set_update_proc(s_watch_batt_layer, watch_batt_update_proc);
   s_hour_layer = text_layer_create(
     GRect(0, bounds.size.h/2-50,
@@ -178,6 +176,10 @@ static void main_window_load(Window *window) {
     resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_48));
   s_date_font = fonts_load_custom_font(
     resource_get_handle(RESOURCE_ID_FONT_ARVO_BOLD_20));
+  
+  // Create GBitmaps
+  s_watch_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_WATCH_6X11);
+  s_phone_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_PHONE_6X11);
 
   // Apply to TextLayer
   text_layer_set_font(s_hour_layer, s_time_font);
@@ -253,8 +255,12 @@ static void init() {
 static void deinit() {
   // Destroy Window
   window_destroy(s_main_window);
-  // Unload GFont
+  // Unload GFonts
   fonts_unload_custom_font(s_time_font);
+  fonts_unload_custom_font(s_date_font);
+  // Destroy GBitmaps
+  gbitmap_destroy(s_watch_icon);
+  gbitmap_destroy(s_phone_icon);
 }
 
 int main(void) {
