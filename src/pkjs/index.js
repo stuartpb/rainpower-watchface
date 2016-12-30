@@ -17,10 +17,7 @@ Pebble.addEventListener('ready', function(e) {
           'PHONE_BATT_CHARGING': battery.charging ? 1 : 0
         }, pebbleSuccess, pebbleFailure);
       };
-      battery.addEventListener('levelchange', function() {
-        console.log('Level change: '+ (battery.level * 100) +'%');
-        reportPhoneBatt();
-      });
+      battery.addEventListener('levelchange', reportPhoneBatt);
       battery.addEventListener('chargingchange', reportPhoneBatt);
       reportPhoneBatt();
     });
