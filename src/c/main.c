@@ -72,6 +72,11 @@ FOR_STATIC_GFONTS(X)
 FOR_STATIC_GBITMAP_POINTERS(X)
 #undef X
 
+const int COLON_WIDTH = 8;
+const int COLON_HEIGHT = 34;
+const int COLON_DOT_HEIGHT = 11;
+const int COLON_MARGIN = 4;
+
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
 static int s_watch_batt_charging = 0;
@@ -171,16 +176,20 @@ static void colon_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_rect(ctx, GRect(0,0,8,11), 1, GCornersAll);
-  graphics_fill_rect(ctx, GRect(0,bounds.size.h-11,8,11), 1, GCornersAll);
+  graphics_fill_rect(ctx,
+    GRect(0, 0, COLON_WIDTH, COLON_DOT_HEIGHT),
+    1, GCornersAll);
+  graphics_fill_rect(ctx,
+    GRect(0, bounds.size.h - COLON_DOT_HEIGHT, COLON_WIDTH, COLON_DOT_HEIGHT),
+    1, GCornersAll);
   graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(-1,-4,10,12),
+      GRect(-1, -4, 10, 12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   } else if (s_time_is_pm == 1) {
     graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(-1,bounds.size.h-15,10,12),
+      GRect(-1, bounds.size.h - COLON_DOT_HEIGHT - 4, 10, 12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
 }
@@ -223,15 +232,20 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
+  int colon_left = bounds.size.w/2 - COLON_WIDTH/2;
+
   // Create layers
   s_phone_batt_layer = layer_create(GRect(0, 21, bounds.size.w, 11));
   s_watch_batt_layer = layer_create(GRect(0, 8, bounds.size.w, 11));
   s_colon_layer = layer_create(
-    GRect(bounds.size.w/2-4, bounds.size.h/2-36, 8, 34));
+    GRect(colon_left, bounds.size.h/2-36,
+      COLON_WIDTH, COLON_HEIGHT));
   s_hour_layer = text_layer_create(
-    GRect(0, bounds.size.h/2-50, bounds.size.w/2-8, 50));
+    GRect(0, bounds.size.h/2-50,
+      colon_left - COLON_MARGIN, 50));
   s_min_layer = text_layer_create(
-    GRect(bounds.size.w/2+8, bounds.size.h/2-50, bounds.size.w/2-8, 50));
+    GRect(colon_left + COLON_WIDTH + COLON_MARGIN, bounds.size.h/2-50,
+      bounds.size.w - (colon_left + COLON_WIDTH + COLON_MARGIN * 2), 50));
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
