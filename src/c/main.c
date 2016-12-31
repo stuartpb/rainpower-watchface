@@ -92,14 +92,12 @@ static void update_time() {
   static char s_min_buffer[3];
   static char s_date_buffer[15];
 
-  strftime(s_hour_buffer, sizeof(s_hour_buffer),
-    clock_is_24h_style() ? "%H" : "%I", tick_time);
-  strftime(s_min_buffer, sizeof(s_min_buffer), "%M", tick_time);
-  text_layer_set_text(s_hour_layer, s_hour_buffer);
-  text_layer_set_text(s_min_layer, s_min_buffer);
+  int hour = tick_time->tm_hour;
 
   if (!clock_is_24h_style()) {
-    int is_pm = tick_time->tm_hour > 11;
+    int is_pm = hour > 11;
+    hour = hour % 12;
+    if (!hour) hour = 12;
     if (s_time_is_pm != is_pm) {
       s_time_is_pm = is_pm;
       layer_mark_dirty(s_colon_layer);
@@ -108,6 +106,12 @@ static void update_time() {
     s_time_is_pm = 2;
     layer_mark_dirty(s_colon_layer);
   }
+
+  snprintf(s_hour_buffer, sizeof(s_hour_buffer),
+    clock_is_24h_style() ? "%02i" : "%i", hour);
+  strftime(s_min_buffer, sizeof(s_min_buffer), "%M", tick_time);
+  text_layer_set_text(s_hour_layer, s_hour_buffer);
+  text_layer_set_text(s_min_layer, s_min_buffer);
 
   snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %02i/%02i.%04i",
     weekdays[tick_time->tm_wday],
@@ -160,12 +164,6 @@ static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
 static void bluetooth_callback(bool connected) {
   s_phone_connected = connected;
   layer_mark_dirty(s_phone_batt_layer);
-}
-
-static void init_watch_text_layer(TextLayer *text_layer) {
-  // Improve the layout to be more like a watchface
-  text_layer_set_background_color(text_layer, GColorClear);
-  text_layer_set_text_color(text_layer, GColorWhite);
 }
 
 static void colon_layer_update_proc(Layer *layer, GContext *ctx) {
@@ -237,7 +235,7 @@ static void main_window_load(Window *window) {
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
-  // Set update functions
+  // Set layer update functions
   #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
   FOR_MAIN_WINDOW_LAYER_NAMES(X)
   #undef X
@@ -252,14 +250,17 @@ static void main_window_load(Window *window) {
   FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
   #undef X
 
-  // Apply to TextLayer
+  // Set colors for text layers
+  #define X(text_layer) \
+    text_layer_set_background_color(text_layer, GColorClear); \
+    text_layer_set_text_color(text_layer, GColorWhite);
+  FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X);
+  #undef X
+
+  // Set fonts and alignments for text layers
   text_layer_set_font(s_hour_layer, s_time_font);
   text_layer_set_font(s_min_layer, s_time_font);
   text_layer_set_font(s_date_layer, s_date_font);
-
-  init_watch_text_layer(s_hour_layer);
-  init_watch_text_layer(s_min_layer);
-  init_watch_text_layer(s_date_layer);
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
@@ -282,6 +283,14 @@ static void main_window_unload(Window *window) {
   #undef X
   #define X(layer) text_layer_destroy(layer);
   FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
+  #undef X
+
+  // Unload fonts and bitmaps
+  #define X(name) fonts_unload_custom_font(name);
+  FOR_STATIC_GFONTS(X)
+  #undef X
+  #define X(name) gbitmap_destroy(name);
+  FOR_STATIC_GBITMAP_POINTERS(X)
   #undef X
 }
 
@@ -336,14 +345,6 @@ static void init() {
 static void deinit() {
   // Destroy Window
   window_destroy(s_main_window);
-
-  #define X(name) fonts_unload_custom_font(name);
-  FOR_STATIC_GFONTS(X)
-  #undef X
-
-  #define X(name) gbitmap_destroy(name);
-  FOR_STATIC_GBITMAP_POINTERS(X)
-  #undef X
 }
 
 int main(void) {
