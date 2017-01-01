@@ -24,7 +24,7 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(time_font, FONT_ARVO_BOLD_48)) \
+  APPLY_MACRO(X,tr(time_font, FONT_DIGITS_ARVO_BOLD_55)) \
   APPLY_MACRO(X,tr(date_font, FONT_ARVO_BOLD_20))
 
 #define IDENTITY_MACRO(x) x
@@ -73,12 +73,13 @@ FOR_STATIC_GBITMAP_POINTERS(X)
 #undef X
 
 const int COLON_WIDTH = 8;
-const int COLON_HEIGHT = 34;
+const int COLON_HEIGHT = 42;
 const int COLON_DOT_HEIGHT = 11;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -15;
+const int COLON_12H_SHIFT = -10;
 const int COLON_TOP_SHIFT = 14;
-const int CLOCK_HEIGHT = 50;
+const int CLOCK_HEIGHT = 58;
+const int CLOCK_TOP_SHIFT = 3;
 
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
@@ -99,7 +100,7 @@ static int colon_left_position(int winwidth) {
 }
 
 static int clock_top_position(int winheight) {
-  return winheight / 2 - CLOCK_HEIGHT;
+  return winheight / 2 - CLOCK_HEIGHT + CLOCK_TOP_SHIFT;
 }
 
 static GRect hour_layer_frame(int winwidth, int winheight) {
