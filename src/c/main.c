@@ -76,6 +76,9 @@ const int COLON_WIDTH = 8;
 const int COLON_HEIGHT = 34;
 const int COLON_DOT_HEIGHT = 11;
 const int COLON_MARGIN = 4;
+const int COLON_12H_SHIFT = -15;
+const int COLON_TOP_SHIFT = 14;
+const int CLOCK_HEIGHT = 50;
 
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
@@ -86,6 +89,53 @@ static int s_phone_connected = 0;
 
 static const char* weekdays[] = {
   "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
+
+static int colon_left_position(int winwidth) {
+  int left = winwidth/2 - COLON_WIDTH/2;
+  if (!clock_is_24h_style()) {
+    left += COLON_12H_SHIFT;
+  }
+  return left;
+}
+
+static int clock_top_position(int winheight) {
+  return winheight / 2 - CLOCK_HEIGHT;
+}
+
+static GRect hour_layer_bounds(int winwidth, int winheight) {
+  return GRect(
+    0,
+    clock_top_position(winheight),
+    colon_left_position(winwidth) - COLON_MARGIN,
+    CLOCK_HEIGHT);
+}
+static GRect min_layer_bounds(int winwidth, int winheight) {
+  int left = colon_left_position(winwidth) + COLON_WIDTH + COLON_MARGIN;
+  return GRect(
+    left,
+    clock_top_position(winheight),
+    winwidth - left,
+    CLOCK_HEIGHT);
+}
+static GRect colon_layer_bounds(int winwidth, int winheight) {
+  return GRect(
+    colon_left_position(winwidth),
+    clock_top_position(winheight) + COLON_TOP_SHIFT,
+    COLON_WIDTH,
+    COLON_HEIGHT);
+}
+
+static void update_clock_position() {
+  GRect bounds = layer_get_bounds(window_get_root_layer(s_main_window));
+  int winwidth = bounds.size.w;
+  int winheight = bounds.size.h;
+  layer_set_bounds(s_colon_layer,
+    colon_layer_bounds(winwidth, winheight));
+  layer_set_bounds(text_layer_get_layer(s_hour_layer),
+    hour_layer_bounds(winwidth, winheight));
+  layer_set_bounds(text_layer_get_layer(s_min_layer),
+    min_layer_bounds(winwidth, winheight));
+}
 
 static void update_time() {
   // Get a tm structure
@@ -104,10 +154,14 @@ static void update_time() {
     hour = hour % 12;
     if (!hour) hour = 12;
     if (s_time_is_pm != is_pm) {
+      if (s_time_is_pm == 2) {
+        update_clock_position();
+      }
       s_time_is_pm = is_pm;
       layer_mark_dirty(s_colon_layer);
     }
   } else if (s_time_is_pm != 2) {
+    update_clock_position();
     s_time_is_pm = 2;
     layer_mark_dirty(s_colon_layer);
   }
@@ -231,21 +285,23 @@ static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  int winwidth = bounds.size.w;
+  int winheight = bounds.size.h;
 
-  int colon_left = bounds.size.w/2 - COLON_WIDTH/2;
+  // HACK: This makes it so colon position doesn't have to be re-written
+  // when updating the time the first time.
+  // A better "was 24h at last check" bool would make this unnecessary:
+  // tracking @ https://github.com/stuartpb/rainpower-watchface/issues/6
+  if (!clock_is_24h_style()) s_time_is_pm = 3;
 
   // Create layers
   s_phone_batt_layer = layer_create(GRect(0, 21, bounds.size.w, 11));
   s_watch_batt_layer = layer_create(GRect(0, 8, bounds.size.w, 11));
-  s_colon_layer = layer_create(
-    GRect(colon_left, bounds.size.h/2-36,
-      COLON_WIDTH, COLON_HEIGHT));
-  s_hour_layer = text_layer_create(
-    GRect(0, bounds.size.h/2-50,
-      colon_left - COLON_MARGIN, 50));
-  s_min_layer = text_layer_create(
-    GRect(colon_left + COLON_WIDTH + COLON_MARGIN, bounds.size.h/2-50,
-      bounds.size.w - (colon_left + COLON_WIDTH + COLON_MARGIN * 2), 50));
+
+  s_colon_layer = layer_create(colon_layer_bounds(winwidth, winheight));
+  s_hour_layer = text_layer_create(hour_layer_bounds(winwidth, winheight));
+  s_min_layer = text_layer_create(min_layer_bounds(winwidth, winheight));
+
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
