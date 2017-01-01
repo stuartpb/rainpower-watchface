@@ -1,79 +1,81 @@
 {
-    "author": "Stuart P. Bentley",
-    "dependencies": {},
-    "keywords": [
-        "pebble-app"
+  "author": "Stuart P. Bentley",
+  "dependencies": {
+    "pebble-clay": "^1.0.4"
+  },
+  "keywords": [
+    "pebble-app"
+  ],
+  "name": "rainpower",
+  "pebble": {
+    "capabilities": [
+      "location",
+      "configurable"
     ],
-    "name": "rainpower",
-    "pebble": {
-        "capabilities": [
-            "location",
-            "configurable"
-        ],
-        "displayName": "Rainpower",
-        "enableMultiJS": true,
-        "messageKeys": [
-            "QUERY_PHONE_BATT",
-            "PHONE_BATT_LEVEL",
-            "PHONE_BATT_CHARGING"
-        ],
-        "projectType": "native",
-        "resources": {
-            "media": [
-                {
-                    "file": "images/icon-phone-disconnected-6x11.png",
-                    "name": "ICON_PHONE_DISCONNECTED_6X11",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/icon-phone-charging-6x11.png",
-                    "name": "ICON_PHONE_CHARGING_6X11",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/icon-watch-charging-6x11.png",
-                    "name": "ICON_WATCH_CHARGING_6X11",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/icon-phone-6x11.png",
-                    "name": "ICON_PHONE_6X11",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/icon-watch-6x11.png",
-                    "name": "ICON_WATCH_6X11",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "characterRegex": "[0-9]",
-                    "file": "fonts/Arvo-Bold.ttf",
-                    "name": "FONT_DIGITS_ARVO_BOLD_55",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "characterRegex": "[0-9A-Z\\-:./ ]",
-                    "file": "fonts/Arvo-Bold.ttf",
-                    "name": "FONT_ARVO_BOLD_20",
-                    "targetPlatforms": null,
-                    "type": "font"
-                }
-            ]
+    "displayName": "Rainpower",
+    "enableMultiJS": true,
+    "messageKeys": [
+      "QUERY_PHONE_BATT",
+      "PHONE_BATT_LEVEL",
+      "PHONE_BATT_CHARGING"
+    ],
+    "projectType": "native",
+    "resources": {
+      "media": [
+        {
+          "file": "images/icon-phone-disconnected-6x11.png",
+          "name": "ICON_PHONE_DISCONNECTED_6X11",
+          "targetPlatforms": null,
+          "type": "bitmap"
         },
-        "sdkVersion": "3",
-        "targetPlatforms": [
-            "basalt"
-        ],
-        "uuid": "44fea3c6-459c-4a01-87a6-0996f152dda6",
-        "watchapp": {
-            "watchface": true
+        {
+          "file": "images/icon-phone-charging-6x11.png",
+          "name": "ICON_PHONE_CHARGING_6X11",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
+          "file": "images/icon-watch-charging-6x11.png",
+          "name": "ICON_WATCH_CHARGING_6X11",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
+          "file": "images/icon-phone-6x11.png",
+          "name": "ICON_PHONE_6X11",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
+          "file": "images/icon-watch-6x11.png",
+          "name": "ICON_WATCH_6X11",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
+          "characterRegex": "[0-9]",
+          "file": "fonts/Arvo-Bold.ttf",
+          "name": "FONT_DIGITS_ARVO_BOLD_55",
+          "targetPlatforms": null,
+          "type": "font"
+        },
+        {
+          "characterRegex": "[0-9A-Z\\-:./ ]",
+          "file": "fonts/Arvo-Bold.ttf",
+          "name": "FONT_ARVO_BOLD_20",
+          "targetPlatforms": null,
+          "type": "font"
         }
+      ]
     },
-    "version": "1.0.0"
+    "sdkVersion": "3",
+    "targetPlatforms": [
+      "basalt"
+    ],
+    "uuid": "44fea3c6-459c-4a01-87a6-0996f152dda6",
+    "watchapp": {
+      "watchface": true
+    }
+  },
+  "version": "1.0.0"
 }
