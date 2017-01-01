@@ -102,14 +102,14 @@ static int clock_top_position(int winheight) {
   return winheight / 2 - CLOCK_HEIGHT;
 }
 
-static GRect hour_layer_bounds(int winwidth, int winheight) {
+static GRect hour_layer_frame(int winwidth, int winheight) {
   return GRect(
     0,
     clock_top_position(winheight),
     colon_left_position(winwidth) - COLON_MARGIN,
     CLOCK_HEIGHT);
 }
-static GRect min_layer_bounds(int winwidth, int winheight) {
+static GRect min_layer_frame(int winwidth, int winheight) {
   int left = colon_left_position(winwidth) + COLON_WIDTH + COLON_MARGIN;
   return GRect(
     left,
@@ -117,7 +117,7 @@ static GRect min_layer_bounds(int winwidth, int winheight) {
     winwidth - left,
     CLOCK_HEIGHT);
 }
-static GRect colon_layer_bounds(int winwidth, int winheight) {
+static GRect colon_layer_frame(int winwidth, int winheight) {
   return GRect(
     colon_left_position(winwidth),
     clock_top_position(winheight) + COLON_TOP_SHIFT,
@@ -129,12 +129,12 @@ static void update_clock_position() {
   GRect bounds = layer_get_bounds(window_get_root_layer(s_main_window));
   int winwidth = bounds.size.w;
   int winheight = bounds.size.h;
-  layer_set_bounds(s_colon_layer,
-    colon_layer_bounds(winwidth, winheight));
-  layer_set_bounds(text_layer_get_layer(s_hour_layer),
-    hour_layer_bounds(winwidth, winheight));
-  layer_set_bounds(text_layer_get_layer(s_min_layer),
-    min_layer_bounds(winwidth, winheight));
+  layer_set_frame(s_colon_layer,
+    colon_layer_frame(winwidth, winheight));
+  layer_set_frame(text_layer_get_layer(s_hour_layer),
+    hour_layer_frame(winwidth, winheight));
+  layer_set_frame(text_layer_get_layer(s_min_layer),
+    min_layer_frame(winwidth, winheight));
 }
 
 static void update_time() {
@@ -298,9 +298,9 @@ static void main_window_load(Window *window) {
   s_phone_batt_layer = layer_create(GRect(0, 21, bounds.size.w, 11));
   s_watch_batt_layer = layer_create(GRect(0, 8, bounds.size.w, 11));
 
-  s_colon_layer = layer_create(colon_layer_bounds(winwidth, winheight));
-  s_hour_layer = text_layer_create(hour_layer_bounds(winwidth, winheight));
-  s_min_layer = text_layer_create(min_layer_bounds(winwidth, winheight));
+  s_colon_layer = layer_create(colon_layer_frame(winwidth, winheight));
+  s_hour_layer = text_layer_create(hour_layer_frame(winwidth, winheight));
+  s_min_layer = text_layer_create(min_layer_frame(winwidth, winheight));
 
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
