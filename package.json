@@ -60,6 +60,13 @@
           "type": "font"
         },
         {
+          "characterRegex": "[0-9]",
+          "file": "fonts/Arvo-Bold.ttf",
+          "name": "FONT_DIGITS_ARVO_BOLD_52",
+          "targetPlatforms": null,
+          "type": "font"
+        },
+        {
           "characterRegex": "[0-9SMTWFauh\\-:./ ]",
           "file": "fonts/Arvo-Bold.ttf",
           "name": "FONT_DATE_ARVO_BOLD_20",

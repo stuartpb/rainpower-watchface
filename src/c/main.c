@@ -24,7 +24,8 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(time_font, FONT_DIGITS_ARVO_BOLD_55)) \
+  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_ARVO_BOLD_55)) \
+  APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_ARVO_BOLD_52)) \
   APPLY_MACRO(X,tr(date_font, FONT_DATE_ARVO_BOLD_20))
 
 #define IDENTITY_MACRO(x) x
@@ -73,10 +74,11 @@ FOR_STATIC_GBITMAP_POINTERS(X)
 #undef X
 
 const int COLON_WIDTH = 8;
-const int COLON_HEIGHT = 42;
+const int COLON_12H_HEIGHT = 42;
+const int COLON_24H_HEIGHT = 38;
 const int COLON_DOT_HEIGHT = 11;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -10;
+const int COLON_12H_SHIFT = -6;
 const int COLON_TOP_SHIFT = 14;
 const int CLOCK_HEIGHT = 58;
 const int CLOCK_TOP_SHIFT = 3;
@@ -123,7 +125,7 @@ static GRect colon_layer_frame(int winwidth, int winheight) {
     colon_left_position(winwidth),
     clock_top_position(winheight) + COLON_TOP_SHIFT,
     COLON_WIDTH,
-    COLON_HEIGHT);
+    clock_is_24h_style() ? COLON_24H_HEIGHT : COLON_12H_HEIGHT);
 }
 
 static void update_clock_position() {
@@ -136,6 +138,8 @@ static void update_clock_position() {
     hour_layer_frame(winwidth, winheight));
   layer_set_frame(text_layer_get_layer(s_min_layer),
     min_layer_frame(winwidth, winheight));
+  text_layer_set_font(s_hour_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_min_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
 }
 
 static void update_time() {
@@ -329,8 +333,8 @@ static void main_window_load(Window *window) {
   #undef X
 
   // Set fonts and alignments for text layers
-  text_layer_set_font(s_hour_layer, s_time_font);
-  text_layer_set_font(s_min_layer, s_time_font);
+  text_layer_set_font(s_hour_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_min_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
   text_layer_set_font(s_date_layer, s_date_font);
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
