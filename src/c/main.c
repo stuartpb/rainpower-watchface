@@ -25,7 +25,7 @@ static Window *s_main_window;
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(time_font, FONT_DIGITS_ARVO_BOLD_55)) \
-  APPLY_MACRO(X,tr(date_font, FONT_ARVO_BOLD_20))
+  APPLY_MACRO(X,tr(date_font, FONT_DATE_ARVO_BOLD_20))
 
 #define IDENTITY_MACRO(x) x
 #define STATIC_PREFIX_MACRO(x) s_ ## x
@@ -89,7 +89,7 @@ static int s_phone_batt_charging = 0;
 static int s_phone_connected = 0;
 
 static const char* weekdays[] = {
-  "SU", "MO", "TU", "WE", "TH", "FR", "SA"};
+  "Su", "M", "Tu", "W", "Th", "F", "Sa"};
 
 static int colon_left_position(int winwidth) {
   int left = winwidth/2 - COLON_WIDTH/2;
@@ -173,7 +173,7 @@ static void update_time() {
   text_layer_set_text(s_hour_layer, s_hour_buffer);
   text_layer_set_text(s_min_layer, s_min_buffer);
 
-  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %02i/%02i.%04i",
+  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %i/%i.%i",
     weekdays[tick_time->tm_wday],
     tick_time->tm_mon + 1, tick_time->tm_mday,
     tick_time->tm_year + 1900);
