@@ -1,7 +1,9 @@
 {
   "author": "Stuart P. Bentley",
   "dependencies": {
-    "pebble-clay": "^1.0.4"
+    "pebble-clay": "^1.0.4",
+    "promise-polyfill": "^6.0.2",
+    "whatwg-fetch": "^2.0.1"
   },
   "keywords": [
     "pebble-app"

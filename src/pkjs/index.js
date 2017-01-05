@@ -7,27 +7,115 @@ var clayConfig = require('./config.js');
 // Initialize Clay
 var clay = new Clay(clayConfig, null, {autoHandleEvents: false});
 
-function pebbleSuccess(e) {
-  // do nothing
+var Promise = Promise || require('promise-polyfill');
+var fetch = fetch || require('whatwg-fetch');
+
+function sendAppMessagePromised(message) {
+  return new Promise(function(resolve, reject) {
+    return Pebble.sendAppMessage(message, resolve, reject);
+  });
 }
-function pebbleFailure(e) {
-  console.error(e);
+
+// TODO: incorporate one-at-a-time here
+// (which will probably entail controlling the first call, too)
+// https://github.com/stuartpb/rainpower-watchface/issues/11
+function every5Minutes(cb) {
+  var timer;
+  function begin() {
+    timer = setInterval(cb, 3e5);
+    cb();
+  }
+  // start at the next 5-minute interval
+  timer = setTimeout(begin, 3e5 - Date.now() % 3e5);
+  return function() {
+    // This is valid for clearing setTimeout as well, per the HTML spec
+    // http://stackoverflow.com/a/27369447/34799
+    clearInterval(timer);
+  };
 }
 
 // See webviewclosed handler below
 var darkSkyApiKey = localStorage.getItem('DARK_SKY_API_KEY');
 var darkSkyRequestUnits = localStorage.getItem('DARK_SKY_REQUEST_UNITS');
 
+var clearWeatherInterval;
+
 var reportPhoneBatt;
+
+function getDarkSkyApiUrlForHere() {
+  return new Promise(function(resolve, reject) {
+    function geolocationSuccess(position) {
+      if (darkSkyApiKey) {
+        resolve('https://api.darksky.net/forecast/' + darkSkyApiKey + '/' +
+          position.coords.latitude + ',' + position.coords.longitude);
+
+      // This *shouldn't* happen, but it could theoretically happen
+      // if someone reconfigured the watchface within the moment between
+      // getCurrentPosition and the location response being returned
+      // (see note about cancelling in-flight requests in initWeather)
+      } else {
+        reject(new Error('Hotshot user destroyed API access mid-positioning'));
+      }
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(geolocationSuccess,
+        // TODO: handle geolocation error with fallback
+        reject,
+        {
+          // TODO: make maximum age configurable
+          maximumAge: Infinity,
+          // TODO: figure out what sensible timeout values even look like
+          // https://github.com/stuartpb/rainpower-watchface/issues/11
+          timeout: 3e5
+        });
+    } else {
+      // TODO: Fallback location
+      reject(new Error('no navigator.geolocation'));
+    }
+  });
+}
+
+function precipIntPercent(point) {
+  return Math.round(point.precipProbability * 100);
+}
+
+function requestAndReportWeather() {
+  return getDarkSkyApiUrlForHere().then(function(url) {
+    return fetch(url).then(function(res){return res.json();});
+  }).then(function(response) {
+    return sendAppMessagePromised({
+      'CURRENT_TEMPERATURE': response.currently.temperature,
+      'CURRENT_TEMPERATURE_IS_FAHRENHEIT': response.flags.units == 'us',
+      'PRECIP_PROBABILITY_NEXT_60_MINUTES':
+        response.minutely.map(precipIntPercent),
+      'PRECIP_PROBABILITY_NEXT_48_HOURS':
+        response.hourly.map(precipIntPercent)
+    });
+  }).catch(console.error.bind(console));
+}
+
+function initWeather() {
+  if (darkSkyApiKey) {
+    requestAndReportWeather().then(function(){
+      clearWeatherInterval = every5Minutes(requestAndReportWeather);
+    });
+
+  // initWeather is also responsible for de-initting weather
+  } else if (clearWeatherInterval) {
+    // Any weather request in progress will just have to reject accordingly,
+    // on its own timetable, due to cancellation being impossible
+    clearWeatherInterval();
+  }
+}
 
 Pebble.addEventListener('ready', function(e) {
   if (navigator.getBattery) {
     navigator.getBattery().then(function (battery) {
       reportPhoneBatt = function () {
-        Pebble.sendAppMessage({
+        return sendAppMessagePromised({
           'PHONE_BATT_LEVEL': Math.floor(battery.level * 100),
           'PHONE_BATT_CHARGING': battery.charging ? 1 : 0
-        }, pebbleSuccess, pebbleFailure);
+        });
       };
       battery.addEventListener('levelchange', reportPhoneBatt);
       battery.addEventListener('chargingchange', reportPhoneBatt);
@@ -39,6 +127,7 @@ Pebble.addEventListener('ready', function(e) {
   } else {
     console.log('No navigator.userAgent, probably running in emulator');
   }
+  initWeather();
 });
 Pebble.addEventListener('appmessage', function(e) {
   if (e.payload.QUERY_PHONE_BATT && reportPhoneBatt) {
@@ -53,7 +142,6 @@ Pebble.addEventListener('showConfiguration', function(e) {
 });
 
 Pebble.addEventListener('webviewclosed', function(e) {
-
   if (e && !e.response) {
     return;
   }
@@ -72,4 +160,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
   localStorage.setItem('DARK_SKY_API_KEY', darkSkyApiKey);
   darkSkyRequestUnits = dict.DARK_SKY_REQUEST_UNITS;
   localStorage.setItem('DARK_SKY_REQUEST_UNITS', darkSkyRequestUnits);
+
+  // reflect this re-configuration
+  initWeather();
 });
