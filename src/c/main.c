@@ -9,12 +9,14 @@ static Window *s_main_window;
 #define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(hour_layer)) \
   APPLY_MACRO(X,tr(min_layer)) \
-  APPLY_MACRO(X,tr(date_layer))
+  APPLY_MACRO(X,tr(date_layer)) \
+  APPLY_MACRO(X,tr(temperature_layer))
 
 #define MAIN_WINDOW_LAYERS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(colon_layer)) \
   APPLY_MACRO(X,tr(phone_batt_layer)) \
-  APPLY_MACRO(X,tr(watch_batt_layer))
+  APPLY_MACRO(X,tr(watch_batt_layer)) \
+  APPLY_MACRO(X,tr(precip_chance_layer))
 
 #define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(watch_icon, ICON_WATCH_6X11)) \
@@ -26,7 +28,8 @@ static Window *s_main_window;
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_ARVO_BOLD_55)) \
   APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_ARVO_BOLD_52)) \
-  APPLY_MACRO(X,tr(date_font, FONT_DATE_ARVO_BOLD_20))
+  APPLY_MACRO(X,tr(date_font, FONT_DATE_ARVO_BOLD_20)) \
+  APPLY_MACRO(X,tr(temperature_font, FONT_DIGITS_ARVO_BOLD_36))
 
 #define IDENTITY_MACRO(x) x
 #define STATIC_PREFIX_MACRO(x) s_ ## x
@@ -81,6 +84,9 @@ const int COLON_MARGIN = 4;
 const int COLON_12H_SHIFT = -6;
 const int COLON_TOP_SHIFT = 14;
 const int CLOCK_HEIGHT = 58;
+const int WEATHER_HEIGHT = 40;
+const int TEMPERATURE_TOP_SHIFT = -4;
+const int TEMPERATURE_WIDTH = 50;
 const int CLOCK_TOP_SHIFT = 3;
 
 static int s_time_is_pm = 2;
@@ -89,6 +95,12 @@ static int s_watch_batt_charging = 0;
 static int s_phone_batt_level = 0;
 static int s_phone_batt_charging = 0;
 static int s_phone_connected = 0;
+static int s_current_temperature = 0;
+static int s_current_temperature_is_f = 0;
+
+static uint8_t s_precip_48h[48];
+static uint8_t s_precip_60m[60];
+static GPoint s_precip_points[110];
 
 static const char* weekdays[] = {
   "Su", "M", "Tu", "W", "Th", "F", "Sa"};
@@ -138,8 +150,22 @@ static void update_clock_position() {
     hour_layer_frame(winwidth, winheight));
   layer_set_frame(text_layer_get_layer(s_min_layer),
     min_layer_frame(winwidth, winheight));
-  text_layer_set_font(s_hour_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
-  text_layer_set_font(s_min_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_hour_layer,
+    clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_min_layer,
+    clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+}
+
+static void update_weather() {
+  static char s_temperature_buffer[5];
+
+  // TODO: update s_precip_points
+
+  layer_mark_dirty(s_precip_chance_layer);
+
+  snprintf(s_temperature_buffer, sizeof(s_temperature_buffer), "%i",
+    s_current_temperature);
+  text_layer_set_text(s_temperature_layer, s_temperature_buffer);
 }
 
 static void update_time() {
@@ -201,6 +227,14 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     iterator, MESSAGE_KEY_PHONE_BATT_LEVEL);
   Tuple *phone_batt_charging_tuple = dict_find(
     iterator, MESSAGE_KEY_PHONE_BATT_CHARGING);
+  Tuple *current_temperature_tuple = dict_find(
+    iterator, MESSAGE_KEY_CURRENT_TEMPERATURE);
+  Tuple *current_temperature_is_f_tuple = dict_find(
+    iterator, MESSAGE_KEY_CURRENT_TEMPERATURE_IS_FAHRENHEIT);
+  Tuple *precip_chance_60m_tuple = dict_find(
+    iterator, MESSAGE_KEY_PRECIP_PROBABILITY_NEXT_60_MINUTES);
+  Tuple *precip_chance_48h_tuple = dict_find(
+    iterator, MESSAGE_KEY_PRECIP_PROBABILITY_NEXT_48_HOURS);
 
   if (phone_batt_level_tuple) {
     s_phone_batt_level = phone_batt_level_tuple->value->int32;
@@ -210,6 +244,22 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   }
   if (phone_batt_charging_tuple || phone_batt_level_tuple) {
     layer_mark_dirty(s_phone_batt_layer);
+  }
+
+  if (current_temperature_tuple) {
+    s_current_temperature = current_temperature_tuple->value->int32;
+  }
+  if (current_temperature_is_f_tuple) {
+    s_current_temperature_is_f = current_temperature_is_f_tuple->value->int32;
+  }
+  if (precip_chance_60m_tuple) {
+    memcpy(s_precip_60m, precip_chance_60m_tuple->value, sizeof(s_precip_60m));
+  }
+  if (precip_chance_48h_tuple) {
+    memcpy(s_precip_48h, precip_chance_48h_tuple->value, sizeof(s_precip_48h));
+  }
+  if (current_temperature_tuple) { // I could &&-conditional the others but meh
+    update_weather();
   }
 }
 
@@ -286,6 +336,13 @@ static void watch_batt_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(8,1,bar_width,9), 0, GCornerNone);
 }
 
+static void precip_chance_layer_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+  graphics_context_set_fill_color(ctx, GColorDarkGray);
+  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+  // TODO: fill path from s_precip_points;
+}
+
 static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
@@ -302,6 +359,8 @@ static void main_window_load(Window *window) {
   // Create layers
   s_phone_batt_layer = layer_create(GRect(0, 21, bounds.size.w, 11));
   s_watch_batt_layer = layer_create(GRect(0, 8, bounds.size.w, 11));
+  s_precip_chance_layer = layer_create(GRect(0, bounds.size.h - WEATHER_HEIGHT,
+    bounds.size.w, WEATHER_HEIGHT));
 
   s_colon_layer = layer_create(colon_layer_frame(winwidth, winheight));
   s_hour_layer = text_layer_create(hour_layer_frame(winwidth, winheight));
@@ -309,6 +368,10 @@ static void main_window_load(Window *window) {
 
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
+
+  s_temperature_layer = text_layer_create(
+    GRect(0, bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_TOP_SHIFT,
+      TEMPERATURE_WIDTH, WEATHER_HEIGHT - TEMPERATURE_TOP_SHIFT));
 
   // Set layer update functions
   #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
@@ -333,12 +396,16 @@ static void main_window_load(Window *window) {
   #undef X
 
   // Set fonts and alignments for text layers
-  text_layer_set_font(s_hour_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
-  text_layer_set_font(s_min_layer, clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_hour_layer,
+    clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
+  text_layer_set_font(s_min_layer,
+    clock_is_24h_style() ? s_time_24h_font : s_time_12h_font);
   text_layer_set_font(s_date_layer, s_date_font);
+  text_layer_set_font(s_temperature_layer, s_temperature_font);
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
+  text_layer_set_text_alignment(s_temperature_layer, GTextAlignmentCenter);
 
   // Add children to main window layer
   #define ADD_MAIN_WINDOW_CHILD(layer) layer_add_child(window_layer, layer);
@@ -392,8 +459,8 @@ static void init() {
   app_message_register_outbox_sent(outbox_sent_callback);
 
   // Open AppMessage
-  const int inbox_size = 128;
-  const int outbox_size = 128;
+  const int inbox_size = 256;
+  const int outbox_size = 64;
   app_message_open(inbox_size, outbox_size);
 
   // Register with TickTimerService

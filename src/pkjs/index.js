@@ -1,4 +1,4 @@
-/* global Pebble navigator localStorage */
+/* global Pebble navigator localStorage fetch */
 
 // Import the Clay package
 var Clay = require('pebble-clay');
@@ -8,7 +8,7 @@ var clayConfig = require('./config.js');
 var clay = new Clay(clayConfig, null, {autoHandleEvents: false});
 
 var Promise = Promise || require('promise-polyfill');
-var fetch = fetch || require('whatwg-fetch');
+require('whatwg-fetch');
 
 function sendAppMessagePromised(message) {
   return new Promise(function(resolve, reject) {
@@ -84,12 +84,12 @@ function requestAndReportWeather() {
     return fetch(url).then(function(res){return res.json();});
   }).then(function(response) {
     return sendAppMessagePromised({
-      'CURRENT_TEMPERATURE': response.currently.temperature,
+      'CURRENT_TEMPERATURE': Math.round(response.currently.temperature),
       'CURRENT_TEMPERATURE_IS_FAHRENHEIT': response.flags.units == 'us',
       'PRECIP_PROBABILITY_NEXT_60_MINUTES':
-        response.minutely.map(precipIntPercent),
+        response.minutely.data.map(precipIntPercent),
       'PRECIP_PROBABILITY_NEXT_48_HOURS':
-        response.hourly.map(precipIntPercent)
+        response.hourly.data.map(precipIntPercent)
     });
   }).catch(console.error.bind(console));
 }
@@ -156,9 +156,9 @@ Pebble.addEventListener('webviewclosed', function(e) {
   // them out to their own localStorage options.
   // This is admittedly redundant to what Clay does with 'em, but /shrug
 
-  darkSkyApiKey = dict.DARK_SKY_API_KEY;
+  darkSkyApiKey = dict.DARK_SKY_API_KEY.value;
   localStorage.setItem('DARK_SKY_API_KEY', darkSkyApiKey);
-  darkSkyRequestUnits = dict.DARK_SKY_REQUEST_UNITS;
+  darkSkyRequestUnits = dict.DARK_SKY_REQUEST_UNITS.value;
   localStorage.setItem('DARK_SKY_REQUEST_UNITS', darkSkyRequestUnits);
 
   // reflect this re-configuration
