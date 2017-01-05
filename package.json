@@ -17,7 +17,14 @@
     "messageKeys": [
       "QUERY_PHONE_BATT",
       "PHONE_BATT_LEVEL",
-      "PHONE_BATT_CHARGING"
+      "PHONE_BATT_CHARGING",
+      "DARK_SKY_API_KEY",
+      "DARK_SKY_API_REQUEST_UNITS",
+      "DARK_SKY_API_FALLBACK_LOCATION",
+      "CURRENT_TEMPERATURE",
+      "CURRENT_TEMPERATURE_IS_FAHRENHEIT",
+      "PRECIP_PROBABILITY_NEXT_60_MINUTES",
+      "PRECIP_PROBABILITY_NEXT_48_HOURS"
     ],
     "projectType": "native",
     "resources": {
