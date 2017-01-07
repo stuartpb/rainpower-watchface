@@ -62,6 +62,18 @@
           "type": "bitmap"
         },
         {
+          "file": "images/degrees-c-12x32.png",
+          "name": "DEGREES_C_12X32",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
+          "file": "images/degrees-f-12x32.png",
+          "name": "DEGREES_F_12X32",
+          "targetPlatforms": null,
+          "type": "bitmap"
+        },
+        {
           "characterRegex": "[0-9]",
           "file": "fonts/Arvo-Bold.ttf",
           "name": "FONT_DIGITS_ARVO_BOLD_55",

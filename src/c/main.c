@@ -12,6 +12,9 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(date_layer)) \
   APPLY_MACRO(X,tr(temperature_layer))
 
+#define MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(X, tr) \
+  APPLY_MACRO(X,tr(degree_symbol_layer))
+
 #define MAIN_WINDOW_LAYERS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(colon_layer)) \
   APPLY_MACRO(X,tr(phone_batt_layer)) \
@@ -23,7 +26,9 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
   APPLY_MACRO(X,tr(phone_icon, ICON_PHONE_6X11)) \
   APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11)) \
-  APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11))
+  APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11)) \
+  APPLY_MACRO(X,tr(degrees_c_bitmap, DEGREES_C_12X32)) \
+  APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X32))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_ARVO_BOLD_55)) \
@@ -39,6 +44,9 @@ static Window *s_main_window;
 
 #define FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(macro) \
   MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+
+#define FOR_MAIN_WINDOW_STATIC_BITMAP_LAYER_POINTERS(macro) \
+  MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
 
 #define FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(macro) \
   MAIN_WINDOW_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
@@ -62,6 +70,10 @@ static Window *s_main_window;
 
 #define X(name) static TextLayer *name;
 FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
+#undef X
+
+#define X(name) static BitmapLayer *name;
+FOR_MAIN_WINDOW_STATIC_BITMAP_LAYER_POINTERS(X)
 #undef X
 
 #define X(name) static Layer *name;
@@ -166,6 +178,8 @@ static void update_weather() {
   snprintf(s_temperature_buffer, sizeof(s_temperature_buffer), "%i",
     s_current_temperature);
   text_layer_set_text(s_temperature_layer, s_temperature_buffer);
+  bitmap_layer_set_bitmap(s_degree_symbol_layer,
+    s_current_temperature_is_f ? s_degrees_f_bitmap : s_degrees_c_bitmap);
 }
 
 static void update_time() {
@@ -373,6 +387,11 @@ static void main_window_load(Window *window) {
     GRect(0, bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_TOP_SHIFT,
       TEMPERATURE_WIDTH, WEATHER_HEIGHT - TEMPERATURE_TOP_SHIFT));
 
+  s_degree_symbol_layer = bitmap_layer_create(
+    GRect(TEMPERATURE_WIDTH, bounds.size.h - WEATHER_HEIGHT,
+      12, WEATHER_HEIGHT));
+  bitmap_layer_set_compositing_mode(s_degree_symbol_layer, GCompOpSet);
+
   // Set layer update functions
   #define X(name) layer_set_update_proc(s_ ## name, name ## _update_proc);
   FOR_MAIN_WINDOW_LAYER_NAMES(X)
@@ -412,6 +431,9 @@ static void main_window_load(Window *window) {
   #define X ADD_MAIN_WINDOW_CHILD
   FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(X)
   #undef X
+  #define X(layer) ADD_MAIN_WINDOW_CHILD(bitmap_layer_get_layer(layer))
+  FOR_MAIN_WINDOW_STATIC_BITMAP_LAYER_POINTERS(X)
+  #undef X
   #define X(layer) ADD_MAIN_WINDOW_CHILD(text_layer_get_layer(layer))
   FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
   #undef X
@@ -422,6 +444,9 @@ static void main_window_unload(Window *window) {
   // Destroy layers
   #define X(layer) layer_destroy(layer);
   FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(X)
+  #undef X
+  #define X(layer) bitmap_layer_destroy(layer);
+  FOR_MAIN_WINDOW_STATIC_BITMAP_LAYER_POINTERS(X)
   #undef X
   #define X(layer) text_layer_destroy(layer);
   FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
