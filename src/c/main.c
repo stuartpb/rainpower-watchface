@@ -27,8 +27,8 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(phone_icon, ICON_PHONE_6X11)) \
   APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11)) \
   APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11)) \
-  APPLY_MACRO(X,tr(degrees_c_bitmap, DEGREES_C_12X32)) \
-  APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X32))
+  APPLY_MACRO(X,tr(degrees_c_bitmap, DEGREES_C_12X27)) \
+  APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X27))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
   APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_ARVO_BOLD_55)) \
@@ -97,8 +97,8 @@ const int COLON_12H_SHIFT = -6;
 const int COLON_TOP_SHIFT = 14;
 const int CLOCK_HEIGHT = 58;
 const int WEATHER_HEIGHT = 40;
-const int TEMPERATURE_TOP_SHIFT = -4;
-const int TEMPERATURE_WIDTH = 50;
+const int TEMPERATURE_TOP_SHIFT = -3;
+const int TEMPERATURE_WIDTH = 45;
 const int CLOCK_TOP_SHIFT = 3;
 
 static int s_time_is_pm = 2;
@@ -383,9 +383,11 @@ static void main_window_load(Window *window) {
   s_date_layer = text_layer_create(
     GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
 
-  s_temperature_layer = text_layer_create(
-    GRect(0, bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_TOP_SHIFT,
-      TEMPERATURE_WIDTH, WEATHER_HEIGHT - TEMPERATURE_TOP_SHIFT));
+  s_temperature_layer = text_layer_create(GRect(
+    0,
+    bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_TOP_SHIFT,
+    TEMPERATURE_WIDTH,
+    WEATHER_HEIGHT - TEMPERATURE_TOP_SHIFT));
 
   s_degree_symbol_layer = bitmap_layer_create(
     GRect(TEMPERATURE_WIDTH, bounds.size.h - WEATHER_HEIGHT,
@@ -424,7 +426,7 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_hour_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
-  text_layer_set_text_alignment(s_temperature_layer, GTextAlignmentCenter);
+  text_layer_set_text_alignment(s_temperature_layer, GTextAlignmentRight);
 
   // Add children to main window layer
   #define ADD_MAIN_WINDOW_CHILD(layer) layer_add_child(window_layer, layer);

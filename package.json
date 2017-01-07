@@ -62,14 +62,14 @@
           "type": "bitmap"
         },
         {
-          "file": "images/degrees-c-12x32.png",
-          "name": "DEGREES_C_12X32",
+          "file": "images/degrees-c-12x27.png",
+          "name": "DEGREES_C_12X27",
           "targetPlatforms": null,
           "type": "bitmap"
         },
         {
-          "file": "images/degrees-f-12x32.png",
-          "name": "DEGREES_F_12X32",
+          "file": "images/degrees-f-12x27.png",
+          "name": "DEGREES_F_12X27",
           "targetPlatforms": null,
           "type": "bitmap"
         },
