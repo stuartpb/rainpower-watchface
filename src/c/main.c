@@ -41,6 +41,8 @@ static Window *s_main_window;
 #define STATIC_PREFIX_DISCARD_MACRO(x, _) s_ ## x
 #define STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO(x, id) \
   s_ ## x, RESOURCE_ID_ ## id
+#define STATIC_PREFIX_NO_PREFIX_MACRO(x, y) \
+  s_ ## x, y
 
 #define FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(macro) \
   MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
@@ -88,6 +90,48 @@ FOR_STATIC_GFONTS(X)
 FOR_STATIC_GBITMAP_POINTERS(X)
 #undef X
 
+static GPoint s_precip_points[112];
+static GPoint* s_precip_60m_points = &s_precip_points[2];
+static GPoint* s_precip_48h_points = &s_precip_points[62];
+static const GPathInfo PRECIP_60M_PATHINFO = {
+  .num_points = 60,
+  .points = &s_precip_points[2]
+};
+static const GPathInfo PRECIP_60M_FILLED_PATHINFO = {
+  .num_points = 62,
+  .points = &s_precip_points[0]
+};
+static const GPathInfo PRECIP_48H_PATHINFO = {
+  .num_points = 48,
+  .points = &s_precip_points[62]
+};
+static const GPathInfo PRECIP_48H_FILLED_PATHINFO = {
+  .num_points = 50,
+  .points = &s_precip_points[62]
+};
+static const GPathInfo PRECIP_BOTH_PATHINFO = {
+  .num_points = 108,
+  .points = &s_precip_points[2]
+};
+static const GPathInfo PRECIP_BOTH_FILLED_PATHINFO = {
+  .num_points = 110,
+  .points = &s_precip_points[1]
+};
+
+#define GPATHS_WITH_INFO_METAMACRO(X, tr) \
+  APPLY_MACRO(X,tr(precip_60m_path, PRECIP_60M_FILLED_PATHINFO)) \
+  APPLY_MACRO(X,tr(precip_48h_path, PRECIP_48H_FILLED_PATHINFO))
+
+#define FOR_STATIC_GPATH_POINTERS_WITH_INFO(macro) \
+  GPATHS_WITH_INFO_METAMACRO(macro, STATIC_PREFIX_NO_PREFIX_MACRO)
+
+#define FOR_STATIC_GPATH_POINTERS(macro) \
+  GPATHS_WITH_INFO_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
+
+#define X(name) static GPath *name;
+FOR_STATIC_GPATH_POINTERS(X)
+#undef X
+
 const int COLON_WIDTH = 8;
 const int COLON_12H_HEIGHT = 42;
 const int COLON_24H_HEIGHT = 38;
@@ -99,6 +143,7 @@ const int CLOCK_HEIGHT = 58;
 const int WEATHER_HEIGHT = 40;
 const int TEMPERATURE_TOP_SHIFT = -3;
 const int TEMPERATURE_WIDTH = 45;
+const int PRECIP_60M_WIDTH = 60;
 const int CLOCK_TOP_SHIFT = 3;
 
 static int s_time_is_pm = 2;
@@ -112,7 +157,6 @@ static int s_current_temperature_is_f = 0;
 
 static uint8_t s_precip_48h[48];
 static uint8_t s_precip_60m[60];
-static GPoint s_precip_points[110];
 
 static const char* weekdays[] = {
   "Su", "M", "Tu", "W", "Th", "F", "Sa"};
@@ -171,7 +215,15 @@ static void update_clock_position() {
 static void update_weather() {
   static char s_temperature_buffer[5];
 
-  // TODO: update s_precip_points
+  // update precip chance point positions
+  for (int i = 0; i < 60; i++) {
+    s_precip_60m_points[i].y = WEATHER_HEIGHT -
+      s_precip_60m[i] * WEATHER_HEIGHT / 100;
+  }
+  for (int i = 0; i < 48; i++) {
+    s_precip_48h_points[i].y = WEATHER_HEIGHT -
+      s_precip_48h[i] * WEATHER_HEIGHT / 100;
+  }
 
   layer_mark_dirty(s_precip_chance_layer);
 
@@ -352,9 +404,12 @@ static void watch_batt_layer_update_proc(Layer *layer, GContext *ctx) {
 
 static void precip_chance_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
-  graphics_context_set_fill_color(ctx, GColorDarkGray);
+  graphics_context_set_fill_color(ctx, GColorOxfordBlue);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-  // TODO: fill path from s_precip_points;
+  graphics_context_set_fill_color(ctx, GColorDukeBlue);
+  gpath_draw_filled(ctx, s_precip_60m_path);
+  graphics_context_set_fill_color(ctx, GColorBlue);
+  gpath_draw_filled(ctx, s_precip_48h_path);
 }
 
 static void main_window_load(Window *window) {
@@ -409,6 +464,11 @@ static void main_window_load(Window *window) {
   FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(X)
   #undef X
 
+  // Create GPaths
+  #define X(name, info) name = gpath_create(&info);
+  FOR_STATIC_GPATH_POINTERS_WITH_INFO(X)
+  #undef X
+
   // Set colors for text layers
   #define X(text_layer) \
     text_layer_set_background_color(text_layer, GColorClear); \
@@ -427,6 +487,27 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_min_layer, GTextAlignmentLeft);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   text_layer_set_text_alignment(s_temperature_layer, GTextAlignmentRight);
+
+  // Initialize fixed precipitation graph coordinates
+  s_precip_points[0].y = s_precip_points[1].y =
+    s_precip_points[110].y = s_precip_points[111].y = WEATHER_HEIGHT;
+  s_precip_points[0].x = PRECIP_60M_WIDTH - 1;
+  s_precip_points[1].x = 0;
+  s_precip_points[110].x = bounds.size.w - 1;
+  s_precip_points[111].x = PRECIP_60M_WIDTH;
+
+  int precip_48h_width = (bounds.size.w - PRECIP_60M_WIDTH);
+
+  // Initialize Y and (fixed) X positions
+  for (int i = 0; i < 60; i++) {
+    s_precip_60m_points[i].x = (PRECIP_60M_WIDTH / 60.0) * i;
+    s_precip_60m_points[i].y = WEATHER_HEIGHT;
+  }
+  for (int i = 0; i < 48; i++) {
+    s_precip_48h_points[i].x =
+      PRECIP_60M_WIDTH + ((precip_48h_width - 1) / 47.0) * i;
+    s_precip_48h_points[i].y = WEATHER_HEIGHT;
+  }
 
   // Add children to main window layer
   #define ADD_MAIN_WINDOW_CHILD(layer) layer_add_child(window_layer, layer);
@@ -454,12 +535,15 @@ static void main_window_unload(Window *window) {
   FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
   #undef X
 
-  // Unload fonts and bitmaps
+  // Unload fonts, bitmaps, and paths
   #define X(name) fonts_unload_custom_font(name);
   FOR_STATIC_GFONTS(X)
   #undef X
   #define X(name) gbitmap_destroy(name);
   FOR_STATIC_GBITMAP_POINTERS(X)
+  #undef X
+  #define X(name) gpath_destroy(name);
+  FOR_STATIC_GPATH_POINTERS(X)
   #undef X
 }
 
