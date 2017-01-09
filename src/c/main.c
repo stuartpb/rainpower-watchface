@@ -404,12 +404,32 @@ static void watch_batt_layer_update_proc(Layer *layer, GContext *ctx) {
 
 static void precip_chance_layer_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
+  GPoint midway_48h = GPoint(
+    PRECIP_60M_WIDTH + ((bounds.size.w - PRECIP_60M_WIDTH) / 2),
+    (s_precip_48h_points[23].y + s_precip_48h_points[24].y) / 2
+  );
+
+  // Draw backdrop
   graphics_context_set_fill_color(ctx, GColorOxfordBlue);
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+
+  // Draw graph
   graphics_context_set_fill_color(ctx, GColorDukeBlue);
   gpath_draw_filled(ctx, s_precip_60m_path);
   graphics_context_set_fill_color(ctx, GColorBlue);
   gpath_draw_filled(ctx, s_precip_48h_path);
+
+  // Draw interval lines
+  graphics_context_set_stroke_width(ctx, 1);
+  graphics_context_set_stroke_color(ctx, GColorDukeBlue);
+  graphics_draw_line(ctx, GPoint(PRECIP_60M_WIDTH, 0),
+    GPoint(PRECIP_60M_WIDTH, s_precip_48h_points[0].y - 1));
+  graphics_draw_line(ctx, GPoint(midway_48h.x, 0),
+    GPoint(midway_48h.x, midway_48h.y - 1));
+  graphics_context_set_stroke_color(ctx, GColorBlueMoon);
+  graphics_draw_line(ctx, GPoint(PRECIP_60M_WIDTH, s_precip_48h_points[0].y),
+    GPoint(PRECIP_60M_WIDTH, WEATHER_HEIGHT));
+  graphics_draw_line(ctx, midway_48h, GPoint(midway_48h.x, WEATHER_HEIGHT));
 }
 
 static void main_window_load(Window *window) {
