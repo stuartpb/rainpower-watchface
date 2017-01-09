@@ -74,9 +74,9 @@
           "type": "bitmap"
         },
         {
-          "characterRegex": "[0-9]",
+          "characterRegex": "[0-9DEX]",
           "file": "fonts/UbuntuMono-Bold.ttf",
-          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_80",
+          "name": "FONT_TIME_UBUNTU_MONO_BOLD_80",
           "targetPlatforms": null,
           "type": "font"
         },

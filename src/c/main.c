@@ -27,7 +27,7 @@ static Window *s_main_window;
   apply(X, degrees_f_bitmap, DEGREES_F_12X27)
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(apply, X) \
-  apply(X, time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_80) \
+  apply(X, time_12h_font, FONT_TIME_UBUNTU_MONO_BOLD_80) \
   apply(X, time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60) \
   apply(X, date_font, FONT_DATE_UBUNTU_MONO_BOLD_20) \
   apply(X, temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40)
