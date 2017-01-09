@@ -30,7 +30,7 @@ static Window *s_main_window;
   apply(X, time_12h_font, FONT_TIME_UBUNTU_MONO_BOLD_80) \
   apply(X, time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60) \
   apply(X, date_font, FONT_DATE_UBUNTU_MONO_BOLD_20) \
-  apply(X, temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40)
+  apply(X, temperature_font, FONT_SIGN_DIGITS_UBUNTU_MONO_BOLD_42)
 
 #define APPLY_SINGLE(X, arg) X(arg)
 #define APPLY_STATIC_PREFIX(X, arg) X(s_ ## arg)
@@ -135,10 +135,10 @@ const int COLON_12H_HEIGHT = 38;
 const int COLON_24H_HEIGHT = 38;
 const int COLON_DOT_HEIGHT = 13;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -20;
+const int COLON_12H_SHIFT = -19;
 const int COLON_TOP_SHIFT = 36;
 const int WEATHER_HEIGHT = 40;
-const int TEMPERATURE_TOP_SHIFT = -7;
+const int TEMPERATURE_TOP_SHIFT = -9;
 const int TEMPERATURE_WIDTH = 45;
 const int PRECIP_60M_WIDTH = 60;
 

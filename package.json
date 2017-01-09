@@ -88,9 +88,9 @@
           "type": "font"
         },
         {
-          "characterRegex": "[0-9]",
+          "characterRegex": "[0-9-]",
           "file": "fonts/UbuntuMono-Bold.ttf",
-          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_40",
+          "name": "FONT_SIGN_DIGITS_UBUNTU_MONO_BOLD_42",
           "targetPlatforms": null,
           "type": "font"
         },
