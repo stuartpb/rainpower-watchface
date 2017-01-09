@@ -75,29 +75,29 @@
         },
         {
           "characterRegex": "[0-9]",
-          "file": "fonts/Arvo-Bold.ttf",
-          "name": "FONT_DIGITS_ARVO_BOLD_55",
+          "file": "fonts/UbuntuMono-Bold.ttf",
+          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_70",
           "targetPlatforms": null,
           "type": "font"
         },
         {
           "characterRegex": "[0-9]",
-          "file": "fonts/Arvo-Bold.ttf",
-          "name": "FONT_DIGITS_ARVO_BOLD_52",
+          "file": "fonts/UbuntuMono-Bold.ttf",
+          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_60",
           "targetPlatforms": null,
           "type": "font"
         },
         {
           "characterRegex": "[0-9]",
-          "file": "fonts/Arvo-Bold.ttf",
-          "name": "FONT_DIGITS_ARVO_BOLD_36",
+          "file": "fonts/UbuntuMono-Bold.ttf",
+          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_40",
           "targetPlatforms": null,
           "type": "font"
         },
         {
-          "characterRegex": "[0-9SMTWFauh\\-:./ ]",
-          "file": "fonts/Arvo-Bold.ttf",
-          "name": "FONT_DATE_ARVO_BOLD_20",
+          "characterRegex": "[0-9SMTWFUNOEDHRIA\\- ]",
+          "file": "fonts/UbuntuMono-Bold.ttf",
+          "name": "FONT_DATE_UBUNTU_MONO_BOLD_20",
           "targetPlatforms": null,
           "type": "font"
         }

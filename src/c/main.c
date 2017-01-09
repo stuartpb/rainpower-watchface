@@ -31,10 +31,10 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X27))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_ARVO_BOLD_55)) \
-  APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_ARVO_BOLD_52)) \
-  APPLY_MACRO(X,tr(date_font, FONT_DATE_ARVO_BOLD_20)) \
-  APPLY_MACRO(X,tr(temperature_font, FONT_DIGITS_ARVO_BOLD_36))
+  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_70)) \
+  APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60)) \
+  APPLY_MACRO(X,tr(date_font, FONT_DATE_UBUNTU_MONO_BOLD_20)) \
+  APPLY_MACRO(X,tr(temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40))
 
 #define IDENTITY_MACRO(x) x
 #define STATIC_PREFIX_MACRO(x) s_ ## x
@@ -137,14 +137,14 @@ const int COLON_12H_HEIGHT = 42;
 const int COLON_24H_HEIGHT = 38;
 const int COLON_DOT_HEIGHT = 11;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -6;
-const int COLON_TOP_SHIFT = 14;
-const int CLOCK_HEIGHT = 58;
+const int COLON_12H_SHIFT = -16;
+const int COLON_TOP_SHIFT = 28;
+const int CLOCK_HEIGHT = 72;
 const int WEATHER_HEIGHT = 40;
-const int TEMPERATURE_TOP_SHIFT = -3;
+const int TEMPERATURE_TOP_SHIFT = -7;
 const int TEMPERATURE_WIDTH = 45;
 const int PRECIP_60M_WIDTH = 60;
-const int CLOCK_TOP_SHIFT = 3;
+const int CLOCK_TOP_SHIFT = 6;
 
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
@@ -159,7 +159,7 @@ static uint8_t s_precip_48h[48];
 static uint8_t s_precip_60m[60];
 
 static const char* weekdays[] = {
-  "Su", "M", "Tu", "W", "Th", "F", "Sa"};
+  "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
 
 static int colon_left_position(int winwidth) {
   int left = winwidth/2 - COLON_WIDTH/2;
@@ -263,16 +263,20 @@ static void update_time() {
     layer_mark_dirty(s_colon_layer);
   }
 
-  snprintf(s_hour_buffer, sizeof(s_hour_buffer),
-    clock_is_24h_style() ? "%02i" : "%i", hour);
+  if (clock_is_24h_style()) {
+    snprintf(s_hour_buffer, sizeof(s_hour_buffer), "%02i", hour);
+  } else {
+    int mhour = tick_time->tm_hour % 12;
+    snprintf(s_hour_buffer, sizeof(s_hour_buffer), "%c",
+      mhour < 10 ? mhour ? '0' + mhour : 'D' : mhour == 10 ? 'X' : 'E');
+  }
   strftime(s_min_buffer, sizeof(s_min_buffer), "%M", tick_time);
   text_layer_set_text(s_hour_layer, s_hour_buffer);
   text_layer_set_text(s_min_layer, s_min_buffer);
 
-  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %i/%i.%i",
+  snprintf(s_date_buffer, sizeof(s_date_buffer), "%s %04i-%02i-%02i",
     weekdays[tick_time->tm_wday],
-    tick_time->tm_mon + 1, tick_time->tm_mday,
-    tick_time->tm_year + 1900);
+    tick_time->tm_year + 1900, tick_time->tm_mon + 1, tick_time->tm_mday);
   text_layer_set_text(s_date_layer, s_date_buffer);
 }
 
