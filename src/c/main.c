@@ -31,7 +31,7 @@ static Window *s_main_window;
   APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X27))
 
 #define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_70)) \
+  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_80)) \
   APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60)) \
   APPLY_MACRO(X,tr(date_font, FONT_DATE_UBUNTU_MONO_BOLD_20)) \
   APPLY_MACRO(X,tr(temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40))
@@ -132,19 +132,19 @@ static const GPathInfo PRECIP_BOTH_FILLED_PATHINFO = {
 FOR_STATIC_GPATH_POINTERS(X)
 #undef X
 
-const int COLON_WIDTH = 8;
-const int COLON_12H_HEIGHT = 42;
+const int COLON_WIDTH = 10;
+const int COLON_12H_HEIGHT = 50;
 const int COLON_24H_HEIGHT = 38;
-const int COLON_DOT_HEIGHT = 11;
+const int COLON_DOT_HEIGHT = 13;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -16;
-const int COLON_TOP_SHIFT = 28;
-const int CLOCK_HEIGHT = 72;
+const int COLON_12H_SHIFT = -20;
+const int COLON_TOP_SHIFT = 30;
+const int CLOCK_HEIGHT = 84;
 const int WEATHER_HEIGHT = 40;
 const int TEMPERATURE_TOP_SHIFT = -7;
 const int TEMPERATURE_WIDTH = 45;
 const int PRECIP_60M_WIDTH = 60;
-const int CLOCK_TOP_SHIFT = 6;
+const int CLOCK_TOP_SHIFT = 10;
 
 static int s_time_is_pm = 2;
 static int s_watch_batt_level = 0;
@@ -364,11 +364,11 @@ static void colon_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_text_color(ctx, GColorBlack);
   if (s_time_is_pm == 0) {
     graphics_draw_text(ctx,"A",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(-1, -4, 10, 12),
+      GRect(0, -3, 10, 12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   } else if (s_time_is_pm == 1) {
     graphics_draw_text(ctx,"P",fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-      GRect(-1, bounds.size.h - COLON_DOT_HEIGHT - 4, 10, 12),
+      GRect(0, bounds.size.h - COLON_DOT_HEIGHT - 3, 10, 12),
       GTextOverflowModeWordWrap,GTextAlignmentCenter,NULL);
   }
 }
@@ -460,7 +460,7 @@ static void main_window_load(Window *window) {
   s_min_layer = text_layer_create(min_layer_frame(winwidth, winheight));
 
   s_date_layer = text_layer_create(
-    GRect(0, bounds.size.h/2+5, bounds.size.w, 25));
+    GRect(0, bounds.size.h/2+10, bounds.size.w, 25));
 
   s_temperature_layer = text_layer_create(GRect(
     0,

@@ -76,7 +76,7 @@
         {
           "characterRegex": "[0-9]",
           "file": "fonts/UbuntuMono-Bold.ttf",
-          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_70",
+          "name": "FONT_DIGITS_UBUNTU_MONO_BOLD_80",
           "targetPlatforms": null,
           "type": "font"
         },
