@@ -2,73 +2,69 @@
 
 static Window *s_main_window;
 
-// you need this level of indirection for metamacros
-// https://stackoverflow.com/a/41395465/34799
-#define APPLY_MACRO(x, t) x(t)
+#define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(apply, X) \
+  apply(X, hour_layer) \
+  apply(X, min_layer) \
+  apply(X, date_layer) \
+  apply(X, temperature_layer)
 
-#define MAIN_WINDOW_TEXT_LAYERS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(hour_layer)) \
-  APPLY_MACRO(X,tr(min_layer)) \
-  APPLY_MACRO(X,tr(date_layer)) \
-  APPLY_MACRO(X,tr(temperature_layer))
+#define MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(apply, X) \
+  apply(X, degree_symbol_layer)
 
-#define MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(degree_symbol_layer))
+#define MAIN_WINDOW_LAYERS_METAMACRO(apply, X) \
+  apply(X, colon_layer) \
+  apply(X, phone_batt_layer) \
+  apply(X, watch_batt_layer) \
+  apply(X, precip_chance_layer)
 
-#define MAIN_WINDOW_LAYERS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(colon_layer)) \
-  APPLY_MACRO(X,tr(phone_batt_layer)) \
-  APPLY_MACRO(X,tr(watch_batt_layer)) \
-  APPLY_MACRO(X,tr(precip_chance_layer))
+#define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(apply, X) \
+  apply(X, watch_icon, ICON_WATCH_6X11) \
+  apply(X, watch_charging_icon, ICON_WATCH_CHARGING_6X11) \
+  apply(X, phone_icon, ICON_PHONE_6X11) \
+  apply(X, phone_charging_icon, ICON_PHONE_CHARGING_6X11) \
+  apply(X, phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11) \
+  apply(X, degrees_c_bitmap, DEGREES_C_12X27) \
+  apply(X, degrees_f_bitmap, DEGREES_F_12X27)
 
-#define GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(watch_icon, ICON_WATCH_6X11)) \
-  APPLY_MACRO(X,tr(watch_charging_icon, ICON_WATCH_CHARGING_6X11)) \
-  APPLY_MACRO(X,tr(phone_icon, ICON_PHONE_6X11)) \
-  APPLY_MACRO(X,tr(phone_charging_icon, ICON_PHONE_CHARGING_6X11)) \
-  APPLY_MACRO(X,tr(phone_disconnected_icon, ICON_PHONE_DISCONNECTED_6X11)) \
-  APPLY_MACRO(X,tr(degrees_c_bitmap, DEGREES_C_12X27)) \
-  APPLY_MACRO(X,tr(degrees_f_bitmap, DEGREES_F_12X27))
+#define GFONTS_WITH_RESOURCE_IDS_METAMACRO(apply, X) \
+  apply(X, time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_80) \
+  apply(X, time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60) \
+  apply(X, date_font, FONT_DATE_UBUNTU_MONO_BOLD_20) \
+  apply(X, temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40)
 
-#define GFONTS_WITH_RESOURCE_IDS_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(time_12h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_80)) \
-  APPLY_MACRO(X,tr(time_24h_font, FONT_DIGITS_UBUNTU_MONO_BOLD_60)) \
-  APPLY_MACRO(X,tr(date_font, FONT_DATE_UBUNTU_MONO_BOLD_20)) \
-  APPLY_MACRO(X,tr(temperature_font, FONT_DIGITS_UBUNTU_MONO_BOLD_40))
-
-#define IDENTITY_MACRO(x) x
-#define STATIC_PREFIX_MACRO(x) s_ ## x
-#define STATIC_PREFIX_DISCARD_MACRO(x, _) s_ ## x
-#define STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO(x, id) \
-  s_ ## x, RESOURCE_ID_ ## id
-#define STATIC_PREFIX_NO_PREFIX_MACRO(x, y) \
-  s_ ## x, y
+#define APPLY_SINGLE(X, arg) X(arg)
+#define APPLY_STATIC_PREFIX(X, arg) X(s_ ## arg)
+#define APPLY_STATIC_PREFIX_DISCARD(X, arg1, _) X(s_ ## arg1)
+#define APPLY_STATIC_PREFIX_RESOURCE_ID_PREFIX(X, arg1, arg2) \
+  X(s_ ## arg1, RESOURCE_ID_ ## arg2)
+#define APPLY_STATIC_PREFIX_NO_PREFIX(X, arg1, arg2) \
+  X(s_ ## arg1, arg2)
 
 #define FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(macro) \
-  MAIN_WINDOW_TEXT_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+  MAIN_WINDOW_TEXT_LAYERS_METAMACRO(APPLY_STATIC_PREFIX, macro)
 
 #define FOR_MAIN_WINDOW_STATIC_BITMAP_LAYER_POINTERS(macro) \
-  MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+  MAIN_WINDOW_BITMAP_LAYERS_METAMACRO(APPLY_STATIC_PREFIX, macro)
 
 #define FOR_MAIN_WINDOW_STATIC_LAYER_POINTERS(macro) \
-  MAIN_WINDOW_LAYERS_METAMACRO(macro, STATIC_PREFIX_MACRO)
+  MAIN_WINDOW_LAYERS_METAMACRO(APPLY_STATIC_PREFIX, macro)
 
 #define FOR_MAIN_WINDOW_LAYER_NAMES(macro) \
-  MAIN_WINDOW_LAYERS_METAMACRO(macro, IDENTITY_MACRO)
+  MAIN_WINDOW_LAYERS_METAMACRO(APPLY_SINGLE, macro)
 
 #define FOR_STATIC_GFONTS(macro) \
-  GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
+  GFONTS_WITH_RESOURCE_IDS_METAMACRO(APPLY_STATIC_PREFIX_DISCARD, macro)
 
 #define FOR_STATIC_GFONTS_WITH_RESOURCE_IDS(macro) \
-  GFONTS_WITH_RESOURCE_IDS_METAMACRO(macro, \
-    STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO)
+  GFONTS_WITH_RESOURCE_IDS_METAMACRO( \
+    APPLY_STATIC_PREFIX_RESOURCE_ID_PREFIX, macro)
 
 #define FOR_STATIC_GBITMAP_POINTERS_WITH_RESOURCE_IDS(macro) \
-  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, \
-    STATIC_PREFIX_RESOURCE_ID_PREFIX_MACRO)
+  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO( \
+    APPLY_STATIC_PREFIX_RESOURCE_ID_PREFIX, macro)
 
 #define FOR_STATIC_GBITMAP_POINTERS(macro) \
-  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
+  GBITMAPS_WITH_RESOURCE_IDS_METAMACRO(APPLY_STATIC_PREFIX_DISCARD, macro)
 
 #define X(name) static TextLayer *name;
 FOR_MAIN_WINDOW_STATIC_TEXT_LAYER_POINTERS(X)
@@ -118,15 +114,15 @@ static const GPathInfo PRECIP_BOTH_FILLED_PATHINFO = {
   .points = &s_precip_points[1]
 };
 
-#define GPATHS_WITH_INFO_METAMACRO(X, tr) \
-  APPLY_MACRO(X,tr(precip_60m_path, PRECIP_60M_FILLED_PATHINFO)) \
-  APPLY_MACRO(X,tr(precip_48h_path, PRECIP_48H_FILLED_PATHINFO))
+#define GPATHS_WITH_INFO_METAMACRO(apply, X) \
+  apply(X, precip_60m_path, PRECIP_60M_FILLED_PATHINFO) \
+  apply(X, precip_48h_path, PRECIP_48H_FILLED_PATHINFO)
 
 #define FOR_STATIC_GPATH_POINTERS_WITH_INFO(macro) \
-  GPATHS_WITH_INFO_METAMACRO(macro, STATIC_PREFIX_NO_PREFIX_MACRO)
+  GPATHS_WITH_INFO_METAMACRO(APPLY_STATIC_PREFIX_NO_PREFIX, macro)
 
 #define FOR_STATIC_GPATH_POINTERS(macro) \
-  GPATHS_WITH_INFO_METAMACRO(macro, STATIC_PREFIX_DISCARD_MACRO)
+  GPATHS_WITH_INFO_METAMACRO(APPLY_STATIC_PREFIX_DISCARD, macro)
 
 #define X(name) static GPath *name;
 FOR_STATIC_GPATH_POINTERS(X)
