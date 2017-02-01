@@ -130,16 +130,18 @@ FOR_STATIC_GPATH_POINTERS(X)
 
 const int CLOCK_12H_HEIGHT = 84;
 const int CLOCK_24H_HEIGHT = 64;
-const int CLOCK_TOP_SHIFT = 12;
+const int CLOCK_12H_Y_SHIFT = 12;
+const int CLOCK_24H_Y_SHIFT = 4;
 const int COLON_WIDTH = 10;
 const int COLON_12H_HEIGHT = 38;
 const int COLON_24H_HEIGHT = 38;
 const int COLON_DOT_HEIGHT = 13;
 const int COLON_MARGIN = 4;
-const int COLON_12H_SHIFT = -19;
-const int COLON_TOP_SHIFT = 36;
+const int COLON_12H_X_SHIFT = -19;
+const int COLON_12H_Y_SHIFT = 36;
+const int COLON_24H_Y_SHIFT = 22;
 const int WEATHER_HEIGHT = 40;
-const int TEMPERATURE_TOP_SHIFT = -9;
+const int TEMPERATURE_Y_SHIFT = -9;
 const int TEMPERATURE_WIDTH = 45;
 const int PRECIP_60M_WIDTH = 60;
 
@@ -161,15 +163,15 @@ static const char* weekdays[] = {
 static int colon_left_position(int winwidth) {
   int left = winwidth/2 - COLON_WIDTH/2;
   if (!clock_is_24h_style()) {
-    left += COLON_12H_SHIFT;
+    left += COLON_12H_X_SHIFT;
   }
   return left;
 }
 
 static int clock_top_position(int winheight) {
   return winheight / 2 -
-    (clock_is_24h_style() ? CLOCK_24H_HEIGHT : CLOCK_12H_HEIGHT)
-      + CLOCK_TOP_SHIFT;
+    (clock_is_24h_style() ? CLOCK_24H_HEIGHT : CLOCK_12H_HEIGHT) +
+    (clock_is_24h_style() ? CLOCK_24H_Y_SHIFT : CLOCK_12H_Y_SHIFT);
 }
 
 static GRect hour_layer_frame(int winwidth, int winheight) {
@@ -190,7 +192,8 @@ static GRect min_layer_frame(int winwidth, int winheight) {
 static GRect colon_layer_frame(int winwidth, int winheight) {
   return GRect(
     colon_left_position(winwidth),
-    clock_top_position(winheight) + COLON_TOP_SHIFT,
+    clock_top_position(winheight) +
+      (clock_is_24h_style() ? COLON_24H_Y_SHIFT : COLON_12H_Y_SHIFT),
     COLON_WIDTH,
     clock_is_24h_style() ? COLON_24H_HEIGHT : COLON_12H_HEIGHT);
 }
@@ -463,9 +466,9 @@ static void main_window_load(Window *window) {
 
   s_temperature_layer = text_layer_create(GRect(
     0,
-    bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_TOP_SHIFT,
+    bounds.size.h - WEATHER_HEIGHT + TEMPERATURE_Y_SHIFT,
     TEMPERATURE_WIDTH,
-    WEATHER_HEIGHT - TEMPERATURE_TOP_SHIFT));
+    WEATHER_HEIGHT - TEMPERATURE_Y_SHIFT));
 
   s_degree_symbol_layer = bitmap_layer_create(
     GRect(TEMPERATURE_WIDTH, bounds.size.h - WEATHER_HEIGHT,
