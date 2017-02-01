@@ -128,7 +128,8 @@ static const GPathInfo PRECIP_BOTH_FILLED_PATHINFO = {
 FOR_STATIC_GPATH_POINTERS(X)
 #undef X
 
-const int CLOCK_HEIGHT = 84;
+const int CLOCK_12H_HEIGHT = 84;
+const int CLOCK_24H_HEIGHT = 64;
 const int CLOCK_TOP_SHIFT = 12;
 const int COLON_WIDTH = 10;
 const int COLON_12H_HEIGHT = 38;
@@ -166,7 +167,9 @@ static int colon_left_position(int winwidth) {
 }
 
 static int clock_top_position(int winheight) {
-  return winheight / 2 - CLOCK_HEIGHT + CLOCK_TOP_SHIFT;
+  return winheight / 2 -
+    (clock_is_24h_style() ? CLOCK_24H_HEIGHT : CLOCK_12H_HEIGHT)
+      + CLOCK_TOP_SHIFT;
 }
 
 static GRect hour_layer_frame(int winwidth, int winheight) {
@@ -174,7 +177,7 @@ static GRect hour_layer_frame(int winwidth, int winheight) {
     0,
     clock_top_position(winheight),
     colon_left_position(winwidth) - COLON_MARGIN,
-    CLOCK_HEIGHT);
+    clock_is_24h_style() ? CLOCK_24H_HEIGHT : CLOCK_12H_HEIGHT);
 }
 static GRect min_layer_frame(int winwidth, int winheight) {
   int left = colon_left_position(winwidth) + COLON_WIDTH + COLON_MARGIN;
@@ -182,7 +185,7 @@ static GRect min_layer_frame(int winwidth, int winheight) {
     left,
     clock_top_position(winheight),
     winwidth - left,
-    CLOCK_HEIGHT);
+    clock_is_24h_style() ? CLOCK_24H_HEIGHT : CLOCK_12H_HEIGHT);
 }
 static GRect colon_layer_frame(int winwidth, int winheight) {
   return GRect(
